@@ -7,3 +7,4 @@ declare global {
 /* eslint-enable @typescript-eslint/no-empty-interface */
 
 export { combine, CombinedFixtureBuilder, fixture } from "./fixture";
+export { Seeder } from "./seeder";

@@ -14,7 +14,7 @@ type FixtureOptions<TResult, TArgs> = {
   create: FixtureCreateFn<TResult, TArgs>;
 };
 
-type Fixture<T> = {
+export type Fixture<T> = {
   create: (context: FluseFixtureContext) => Promise<StrictlyRecord<T>>;
 };
 
@@ -58,6 +58,15 @@ export function fixture<TResult, TArgs = false>(
   } as any;
 }
 
+export function isFixture(value: any): value is Fixture<any> {
+  return (
+    !isNil(value) &&
+    typeof value === "object" &&
+    value.hasOwnProperty("create") &&
+    typeof value.create === "function"
+  );
+}
+
 export class CombinedFixtureBuilder<TFixtures extends {} = {}> {
   constructor(private fixtureFns: FixtureFn<any, any>[] = []) {}
 
@@ -86,6 +95,15 @@ export class CombinedFixtureBuilder<TFixtures extends {} = {}> {
         const fixtures: Record<string, any> = {};
         for (const fixtureFn of this.fixtureFns) {
           const fixture = fixtureFn(fixtures);
+
+          if (!isFixture(fixture)) {
+            throw new Error(
+              "An unexpected error occured while executing fixture combination: " +
+                "A fixture function did not return a valid fixture." +
+                "\n\nA valid fixture is a plain object with a 'create' method."
+            );
+          }
+
           const result = await fixture.create(context);
 
           if (isNil(result)) {
@@ -94,15 +112,16 @@ export class CombinedFixtureBuilder<TFixtures extends {} = {}> {
 
           if (!isPlainObject(result)) {
             throw new Error(
-              "An unexpected error occured while combining fixtures." +
-                "\nOne of your fixtures did not return a plain object."
+              "An unexpected error occured while executing fixture combination: " +
+                "one of your fixtures did not return a plain object."
             );
           }
 
           Object.keys(result).forEach((key) => {
             if (fixtures[key]) {
               throw new Error(
-                `Fixture execution was aborted early: a duplicate fixture name '${key}' was found.` +
+                "An unexpected error occured while executing fixture combination: " +
+                  ` a duplicate fixture name '${key}' was found.` +
                   "\nWhen chaining multiple fixtures ensure that you've chosen a unique name for each individual fixture."
               );
             }

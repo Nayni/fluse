@@ -1,4 +1,4 @@
-import { combine, fixture } from ".";
+import { combine, fixture, Seeder } from ".";
 
 class User {
   constructor(public id: number, public username: string) {}
@@ -51,7 +51,7 @@ const voidFixture = fixture({
 });
 
 async function main() {
-  const ctx = {};
+  const seeder = new Seeder();
 
   /* Basic combination */
   const twoUsers = combine()
@@ -61,7 +61,7 @@ async function main() {
     .and(voidFixture())
     .toFixture();
 
-  const twoUserFixtures = await twoUsers.create(ctx);
+  const twoUserFixtures = await seeder.seed(twoUsers);
   console.log(JSON.stringify(twoUserFixtures, null, 2));
 
   /* Advanced combination, using previous fixtures in the chain as arguments for the next. */
@@ -71,7 +71,7 @@ async function main() {
     .and(({ bar }) => postFixture("barPosts", { author: bar }))
     .toFixture();
 
-  const twoUsersWithPostsFixtures = await twoUsersWithPosts.create(ctx);
+  const twoUsersWithPostsFixtures = await seeder.seed(twoUsersWithPosts);
   console.log(JSON.stringify(twoUsersWithPostsFixtures, null, 2));
 }
 
