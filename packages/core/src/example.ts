@@ -1,4 +1,5 @@
 import { combine, fixture, Seeder } from ".";
+import { typeormPlugin } from "./plugin";
 
 class User {
   constructor(public id: number, public username: string) {}
@@ -45,13 +46,15 @@ const postFixture = fixture({
 });
 
 const voidFixture = fixture({
-  async create() {
-    console.log("Hello");
+  async create(ctx) {
+    console.log(`Connection name: ${ctx.typeorm.connectionName}`);
   },
 });
 
 async function main() {
-  const seeder = new Seeder();
+  const seeder = new Seeder({
+    plugins: [typeormPlugin({ message: "hello world" })],
+  });
 
   /* Basic combination */
   const twoUsers = combine()

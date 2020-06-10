@@ -6,7 +6,7 @@
   "scripts": {
     "lint": "eslint . --ext .ts",
     "build": "tsc",
-    "start": "ts-node-dev ./src/example.ts"
+    "start": "ts-node-dev --transpileOnly ./src/example.ts"
   },
   "dependencies": {
     "lodash.isfunction": "^3.0.9",
