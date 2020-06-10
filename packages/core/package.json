@@ -5,17 +5,28 @@
   "license": "MIT",
   "scripts": {
     "lint": "eslint . --ext .ts",
-    "build": "tsc"
+    "build": "tsc",
+    "start": "ts-node-dev ./src/index.ts"
   },
-  "dependencies": {},
+  "dependencies": {
+    "lodash.isfunction": "^3.0.9",
+    "lodash.isnil": "^4.0.0",
+    "lodash.isplainobject": "^4.0.6",
+    "lodash.merge": "^4.6.2"
+  },
   "devDependencies": {
     "@fluse/prettier-config": "1.0.0",
+    "@types/lodash.isfunction": "^3.0.6",
+    "@types/lodash.isnil": "^4.0.6",
+    "@types/lodash.isplainobject": "^4.0.6",
+    "@types/lodash.merge": "^4.6.6",
     "@typescript-eslint/eslint-plugin": "2.30.0",
     "@typescript-eslint/parser": "2.30.0",
     "eslint": "6.8.0",
     "eslint-config-fluse": "1.0.0",
     "lint-staged": "10.2.2",
     "prettier": "2.0.5",
+    "ts-node-dev": "^1.0.0-pre.44",
     "typescript": "3.8.3"
   },
   "lint-staged": {
