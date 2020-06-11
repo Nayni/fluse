@@ -2,71 +2,63 @@
 
 import isFunction from "lodash.isfunction";
 import isNil from "lodash.isnil";
-import { FixtureContext } from ".";
 import { Fixture } from "./fixture";
-import { MaybePromise } from "./utils";
 
-export type SeedExecutor = (fixture: Fixture<any>) => Promise<any>;
+export type SeedExecutor<TContext = any> = (
+  fixture: Fixture<any>,
+  context: TContext
+) => Promise<any>;
 
-export type SeedMiddlewareFn = (
+export type ExecutorMiddlewareFn = (
   fixture: Fixture<any>,
   next: SeedExecutor
 ) => Promise<any>;
 
-export interface Plugin {
+export type Plugin<TConfig = any> = (
+  config: TConfig
+) => {
   name: string;
   version: string;
-  onInit?: () => MaybePromise<void>;
-  onCreateContext?: () => MaybePromise<any>;
-  onCreatSeedExecutor?: () => MaybePromise<SeedMiddlewareFn>;
-}
+  onCreateExecutor?: () => ExecutorMiddlewareFn;
+};
 
-export function isSeedMiddlewareFn(value: any): value is SeedMiddlewareFn {
+export type InitializedPlugin = ReturnType<Plugin>;
+
+export function isExecutorMiddlewareFn(
+  value: any
+): value is ExecutorMiddlewareFn {
   return !isNil(value) && isFunction(value);
 }
 
-export function composeSeedMiddlewareFns<T>(
-  seedMiddlewareFns: SeedMiddlewareFn[],
+export async function composePluginExecutorMiddlewares(
+  plugins: InitializedPlugin[],
   executor: SeedExecutor
 ) {
   let lastExecutor = executor;
-  for (const middleware of seedMiddlewareFns.reverse()) {
+  for (const plugin of plugins.reverse()) {
+    if (isNil(plugin.onCreateExecutor)) {
+      continue;
+    }
+
+    const middleware = plugin.onCreateExecutor();
+
+    if (!isExecutorMiddlewareFn(middleware)) {
+      continue;
+    }
+
     const currentNext = middleware;
     const previousNext = lastExecutor;
-    lastExecutor = (fixture) => {
-      return currentNext(fixture, previousNext);
+    lastExecutor = (fixture, previousContext) => {
+      // The idea here is that plugins create their own sub-context and pass it to the next function.
+      // This allows plugins to execute and create their stuff in an isolated way.
+      // We then aggregate all these sub-context's into a big context object that is passed to the final fixture creator.
+      // All the sub-context's go on a key named after the plugin's name.
+      // However I think this need improvements still...
+      return currentNext(fixture, (fixture, ctx) => {
+        previousContext[plugin.name] = ctx;
+        return previousNext(fixture, previousContext);
+      });
     };
   }
   return lastExecutor;
 }
-
-export type TypeORMPluginConfig = {
-  message?: string;
-};
-
-declare global {
-  interface FluseFixtureContext extends FixtureContext {
-    typeorm: {
-      connectionName: string;
-    };
-  }
-}
-
-export const typeormPlugin = (config: TypeORMPluginConfig): Plugin => {
-  return {
-    version: "0.0.1",
-    name: "typeorm",
-    onCreateContext() {
-      return {
-        connectionName: "default",
-      };
-    },
-    onCreatSeedExecutor() {
-      return async (fixture, next) => {
-        console.log(config.message);
-        const result = await next(fixture);
-        return result;
-      };
-    },
-  };
-};

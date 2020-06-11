@@ -1,0 +1,6 @@
+{
+  "name": "default",
+  "type": "sqlite",
+  "database": "database.db",
+  "entities": ["example/entities/*.ts"]
+}

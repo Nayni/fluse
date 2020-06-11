@@ -1,6 +1,6 @@
 {
-  "name": "@fluse/core",
-  "version": "1.0.0",
+  "name": "fluse-plugin-typeorm",
+  "version": "0.0.0",
   "main": "dist/index.js",
   "license": "MIT",
   "directories": {
@@ -11,27 +11,21 @@
   ],
   "scripts": {
     "lint": "eslint . --ext .ts",
-    "build": "tsc"
-  },
-  "dependencies": {
-    "lodash.isfunction": "^3.0.9",
-    "lodash.isnil": "^4.0.0",
-    "lodash.isplainobject": "^4.0.6",
-    "lodash.merge": "^4.6.2"
+    "build": "tsc",
+    "example": "ts-node-dev --transpileOnly ./example/index.ts"
   },
   "devDependencies": {
     "@fluse/prettier-config": "1.0.0",
-    "@types/lodash.isfunction": "^3.0.6",
-    "@types/lodash.isnil": "^4.0.6",
-    "@types/lodash.isplainobject": "^4.0.6",
-    "@types/lodash.merge": "^4.6.6",
     "@typescript-eslint/eslint-plugin": "2.30.0",
     "@typescript-eslint/parser": "2.30.0",
     "eslint": "6.8.0",
     "eslint-config-fluse": "1.0.0",
     "lint-staged": "10.2.2",
     "prettier": "2.0.5",
+    "reflect-metadata": "^0.1.13",
+    "sqlite3": "^4.2.0",
     "ts-node-dev": "^1.0.0-pre.44",
+    "typeorm": "^0.2.25",
     "typescript": "3.8.3"
   },
   "lint-staged": {
@@ -39,5 +33,9 @@
       "eslint --max-warning 0",
       "prettier --write"
     ]
+  },
+  "peerDependencies": {
+    "@fluse/core": "^1.0.0",
+    "typeorm": "^0.2.25"
   }
 }

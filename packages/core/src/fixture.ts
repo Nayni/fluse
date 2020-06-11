@@ -3,10 +3,11 @@
 import isFunction from "lodash.isfunction";
 import isNil from "lodash.isnil";
 import isPlainObject from "lodash.isplainobject";
+import { FixtureContext } from ".";
 import { MaybePromise, StrictlyRecord } from "./utils";
 
 type FixtureCreateFn<TResult, TArgs> = (
-  context: FluseFixtureContext,
+  context: FixtureContext,
   args: TArgs
 ) => MaybePromise<TResult>;
 
@@ -15,7 +16,7 @@ type FixtureOptions<TResult, TArgs> = {
 };
 
 export type Fixture<T> = {
-  create: (context: FluseFixtureContext) => Promise<StrictlyRecord<T>>;
+  create: (context: FixtureContext) => Promise<StrictlyRecord<T>>;
 };
 
 type FixtureFn<TResult, TFixtures> = (fixtures: TFixtures) => Fixture<TResult>;
@@ -47,7 +48,7 @@ export function fixture<TResult, TArgs = false>(
     args: TArgs
   ) {
     return {
-      async create(context: FluseFixtureContext) {
+      async create(context: FixtureContext) {
         const result = await Promise.resolve(config.create(context, args));
 
         return {

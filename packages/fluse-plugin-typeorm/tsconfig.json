@@ -9,6 +9,8 @@
     "module": "commonjs",
     "moduleResolution": "node",
     "noImplicitAny": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
     "noImplicitReturns": true,
     "noImplicitThis": true,
     "noUnusedLocals": true,
@@ -20,5 +22,5 @@
     "target": "es6"
   },
   "exclude": ["node_modules", "dist"],
-  "include": ["**/*", "../../example.ts"]
+  "include": ["**/*"]
 }
