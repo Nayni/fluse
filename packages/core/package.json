@@ -14,17 +14,11 @@
     "build": "tsc"
   },
   "dependencies": {
-    "lodash.isfunction": "^3.0.9",
-    "lodash.isnil": "^4.0.0",
-    "lodash.isplainobject": "^4.0.6",
-    "lodash.merge": "^4.6.2"
+    "lodash": "^4.17.15"
   },
   "devDependencies": {
     "@fluse/prettier-config": "1.0.0",
-    "@types/lodash.isfunction": "^3.0.6",
-    "@types/lodash.isnil": "^4.0.6",
-    "@types/lodash.isplainobject": "^4.0.6",
-    "@types/lodash.merge": "^4.6.6",
+    "@types/lodash": "^4.14.155",
     "@typescript-eslint/eslint-plugin": "2.30.0",
     "@typescript-eslint/parser": "2.30.0",
     "eslint": "6.8.0",

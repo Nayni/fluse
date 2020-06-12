@@ -1,31 +1,9 @@
-import { combine, fixture, Plugin, Seeder } from "@fluse/core";
+import { combine, fixture, Seeder } from "@fluse/core";
 import "reflect-metadata";
 import { createConnection } from "typeorm";
 import typeormPlugin from "../src";
 import { Post } from "./entities/Post";
 import { User } from "./entities/User";
-
-declare module "@fluse/core" {
-  interface FixtureContext {
-    other: {
-      foo: string;
-    };
-  }
-}
-
-export const otherPlugin: Plugin = () => {
-  return {
-    name: "other",
-    version: "0.0.1",
-    onCreateExecutor() {
-      return (fixture, next) => {
-        return next(fixture, {
-          foo: "bar",
-        });
-      };
-    },
-  };
-};
 
 type UserFixtureArgs = {
   username: string;
@@ -62,17 +40,17 @@ const postFixture = fixture({
 });
 
 async function testTypeORMPlugin() {
+  const userWithPosts = combine()
+    .and(userFixture("foo", { username: "foo" }))
+    .and(({ foo }) => postFixture("fooPosts", { author: foo }))
+    .toFixture();
+
   const seeder = new Seeder({
-    plugins: [typeormPlugin, otherPlugin],
+    fixture: userWithPosts,
+    plugins: [typeormPlugin({ connection: "default", transaction: true })],
   });
 
-  const fixtures = await seeder.seed(
-    combine()
-      .and(userFixture("foo", { username: "foo" }))
-      .and(({ foo }) => postFixture("fooPosts", { author: foo }))
-      .toFixture()
-  );
-
+  const fixtures = await seeder.seed();
   console.log(fixtures);
 }
 

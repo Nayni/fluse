@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import isFunction from "lodash.isfunction";
-import isNil from "lodash.isnil";
+import _ from "lodash";
 import { Fixture } from "./fixture";
+import { isDefined } from "./utils";
 
-export type SeedExecutor<TContext = any> = (
-  fixture: Fixture<any>,
-  context: TContext
-) => Promise<any>;
+export type SeedExecutor<T = any, TContext = any> = (
+  fixture: Fixture<T>,
+  context?: TContext
+) => Promise<T>;
 
 export type ExecutorMiddlewareFn = (
   fixture: Fixture<any>,
@@ -15,28 +15,31 @@ export type ExecutorMiddlewareFn = (
 ) => Promise<any>;
 
 export type Plugin<TConfig = any> = (
-  config: TConfig
+  config?: Partial<TConfig>
 ) => {
   name: string;
   version: string;
   onCreateExecutor?: () => ExecutorMiddlewareFn;
 };
 
-export type InitializedPlugin = ReturnType<Plugin>;
+export type ConfiguredPlugin = ReturnType<Plugin>;
 
 export function isExecutorMiddlewareFn(
   value: any
 ): value is ExecutorMiddlewareFn {
-  return !isNil(value) && isFunction(value);
+  return !_.isNil(value) && _.isFunction(value);
 }
 
-export async function composePluginExecutorMiddlewares(
-  plugins: InitializedPlugin[],
-  executor: SeedExecutor
+export async function composePluginExecutorMiddlewares<T>(
+  plugins: ConfiguredPlugin[],
+  executor: SeedExecutor<T>
 ) {
-  let lastExecutor = executor;
+  let lastExecutor: SeedExecutor<any> = executor;
   for (const plugin of plugins.reverse()) {
-    if (isNil(plugin.onCreateExecutor)) {
+    if (
+      _.isNil(plugin.onCreateExecutor) ||
+      !_.isFunction(plugin.onCreateExecutor)
+    ) {
       continue;
     }
 
@@ -55,10 +58,20 @@ export async function composePluginExecutorMiddlewares(
       // All the sub-context's go on a key named after the plugin's name.
       // However I think this need improvements still...
       return currentNext(fixture, (fixture, ctx) => {
-        previousContext[plugin.name] = ctx;
+        if (isDefined(ctx)) {
+          if (!_.isObject(ctx)) {
+            throw new Error(
+              "An unexpected error occured while executing fixture combination: " +
+                `A plugin (${plugin.name}) has passed in an invalid context object.`
+            );
+          }
+
+          previousContext[plugin.name] = ctx;
+        }
+
         return previousNext(fixture, previousContext);
       });
     };
   }
-  return lastExecutor;
+  return lastExecutor as SeedExecutor<T>;
 }

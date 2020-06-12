@@ -1,4 +1,4 @@
-import isNil from "lodash.isnil";
+import _ from "lodash";
 
 export type MaybePromise<T> = T | Promise<T>;
 
@@ -12,6 +12,6 @@ export type StrictlyRecord<T> = T extends Record<string, any>
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export function isDefined<T>(value: T | null | undefined): value is T {
-  return !isNil(value);
+  return !_.isNil(value);
 }
 /* eslint-enable @typescript-eslint/no-explicit-any */

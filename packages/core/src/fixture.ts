@@ -1,8 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import isFunction from "lodash.isfunction";
-import isNil from "lodash.isnil";
-import isPlainObject from "lodash.isplainobject";
+import _ from "lodash";
 import { FixtureContext } from ".";
 import { MaybePromise, StrictlyRecord } from "./utils";
 
@@ -13,10 +11,12 @@ type FixtureCreateFn<TResult, TArgs> = (
 
 type FixtureOptions<TResult, TArgs> = {
   create: FixtureCreateFn<TResult, TArgs>;
+  remove?: (context: FixtureContext) => Promise<void>;
 };
 
 export type Fixture<T> = {
   create: (context: FixtureContext) => Promise<StrictlyRecord<T>>;
+  remove?: (context: FixtureContext) => Promise<void>;
 };
 
 type FixtureFn<TResult, TFixtures> = (fixtures: TFixtures) => Fixture<TResult>;
@@ -47,24 +47,26 @@ export function fixture<TResult, TArgs = false>(
     name: TName,
     args: TArgs
   ) {
-    return {
-      async create(context: FixtureContext) {
-        const result = await Promise.resolve(config.create(context, args));
+    const create = async (context: FixtureContext) => {
+      const result = await Promise.resolve(config.create(context, args));
 
-        return {
-          [name]: result,
-        };
-      },
+      return {
+        [name]: result,
+      };
+    };
+
+    return {
+      create,
+      remove: config.remove,
     };
   } as any;
 }
 
 export function isFixture(value: any): value is Fixture<any> {
   return (
-    !isNil(value) &&
-    typeof value === "object" &&
+    _.isObject(value) &&
     value.hasOwnProperty("create") &&
-    typeof value.create === "function"
+    _.isFunction((value as any).create)
   );
 }
 
@@ -84,7 +86,7 @@ export class CombinedFixtureBuilder<TFixtures extends {} = {}> {
   ): CombinedFixtureBuilder<TFixtures & TResult> {
     return new CombinedFixtureBuilder<TFixtures & TResult>([
       ...this.fixtureFns,
-      isFunction(fixtureOrFixtureFn)
+      _.isFunction(fixtureOrFixtureFn)
         ? fixtureOrFixtureFn
         : () => fixtureOrFixtureFn,
     ]);
@@ -107,11 +109,11 @@ export class CombinedFixtureBuilder<TFixtures extends {} = {}> {
 
           const result = await fixture.create(context);
 
-          if (isNil(result)) {
+          if (_.isNil(result)) {
             continue;
           }
 
-          if (!isPlainObject(result)) {
+          if (!_.isPlainObject(result)) {
             throw new Error(
               "An unexpected error occured while executing fixture combination: " +
                 "one of your fixtures did not return a plain object."
@@ -132,6 +134,26 @@ export class CombinedFixtureBuilder<TFixtures extends {} = {}> {
         }
 
         return fixtures as StrictlyRecord<TFixtures>;
+      },
+      remove: async (context) => {
+        const fixtures: Record<string, any> = {};
+        for (const fixtureFn of this.fixtureFns.reverse()) {
+          const fixture = fixtureFn(fixtures);
+
+          if (!isFixture(fixture)) {
+            throw new Error(
+              "An unexpected error occured while executing fixture combination: " +
+                "A fixture function did not return a valid fixture." +
+                "\n\nA valid fixture is a plain object with a 'create' method."
+            );
+          }
+
+          if (_.isNil(fixture.remove) || !_.isFunction(fixture.remove)) {
+            continue;
+          }
+
+          await fixture.remove(context);
+        }
       },
     };
   }

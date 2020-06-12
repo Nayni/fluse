@@ -1,5 +1,6 @@
 import { Plugin } from "@fluse/core";
 import {
+  Connection,
   createConnection,
   EntityManager,
   getConnection,
@@ -7,10 +8,12 @@ import {
 } from "typeorm";
 
 type TypeORMPluginConfig = {
-  connectionName?: string;
+  connection: Connection | string;
+  transaction?: boolean;
 };
 
 type TypeORMContext = {
+  connection: Connection;
   entityManager: EntityManager;
 };
 
@@ -20,28 +23,42 @@ declare module "@fluse/core" {
   }
 }
 
-const plugin: Plugin<TypeORMPluginConfig> = ({
-  connectionName = "default",
-}) => {
-  async function getActiveConnection() {
-    return getConnectionManager().has(connectionName)
-      ? getConnection(connectionName)
-      : await createConnection(connectionName);
-  }
+const plugin: Plugin<TypeORMPluginConfig> = (config = {}) => {
+  const { connection = "default", transaction = true } = config;
+
+  const getOrCreateConnection = async () => {
+    if (connection instanceof Connection) {
+      return connection;
+    }
+    if (getConnectionManager().has(connection)) {
+      return getConnection(connection);
+    }
+
+    return await createConnection(connection);
+  };
 
   return {
     name: "typeorm",
     version: "0.0.1",
     onCreateExecutor() {
       return async (fixture, next) => {
-        const connection = await getActiveConnection();
+        const conn = await getOrCreateConnection();
 
-        return connection.transaction(async (runInTransaction) => {
+        if (transaction) {
+          return conn.transaction(async (runInTransaction) => {
+            const result = await next(fixture, {
+              connection: conn,
+              entityManager: runInTransaction,
+            });
+            return result;
+          });
+        } else {
           const result = await next(fixture, {
-            entityManager: runInTransaction,
+            connection: conn,
+            entityManager: conn.createEntityManager(),
           });
           return result;
-        });
+        }
       };
     },
   };
