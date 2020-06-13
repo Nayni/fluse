@@ -1,13 +1,13 @@
 {
-  "name": "@fluse/core",
-  "version": "1.0.0",
+  "name": "fluse",
+  "version": "0.0.1",
   "main": "dist/index.js",
   "license": "MIT",
   "directories": {
     "dist": "dist"
   },
   "files": [
-    "lib"
+    "dist"
   ],
   "scripts": {
     "lint": "eslint . --ext .ts",
@@ -17,15 +17,14 @@
     "lodash": "^4.17.15"
   },
   "devDependencies": {
-    "@fluse/prettier-config": "1.0.0",
     "@types/lodash": "^4.14.155",
     "@typescript-eslint/eslint-plugin": "2.30.0",
     "@typescript-eslint/parser": "2.30.0",
     "eslint": "6.8.0",
     "eslint-config-fluse": "1.0.0",
+    "fluse-prettier-config": "1.0.0",
     "lint-staged": "10.2.2",
     "prettier": "2.0.5",
-    "ts-node-dev": "^1.0.0-pre.44",
     "typescript": "3.8.3"
   },
   "lint-staged": {

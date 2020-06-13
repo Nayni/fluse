@@ -1,4 +1,4 @@
-import { combine, fixture, Seeder } from "@fluse/core";
+import { combine, fixture, Seeder } from "fluse";
 import "reflect-metadata";
 import { createConnection } from "typeorm";
 import typeormPlugin from "../src";

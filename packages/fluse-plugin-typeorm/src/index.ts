@@ -1,4 +1,4 @@
-import { Plugin } from "@fluse/core";
+import { Plugin } from "fluse";
 import {
   Connection,
   createConnection,
@@ -17,7 +17,7 @@ type TypeORMContext = {
   entityManager: EntityManager;
 };
 
-declare module "@fluse/core" {
+declare module "fluse" {
   interface FixtureContext {
     typeorm: TypeORMContext;
   }
@@ -45,10 +45,10 @@ const plugin: Plugin<TypeORMPluginConfig> = (config = {}) => {
         const conn = await getOrCreateConnection();
 
         if (transaction) {
-          return conn.transaction(async (runInTransaction) => {
+          return conn.transaction(async (entityManager) => {
             const result = await next(fixture, {
               connection: conn,
-              entityManager: runInTransaction,
+              entityManager,
             });
             return result;
           });

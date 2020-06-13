@@ -1,1 +1,1 @@
-module.exports = require("@fluse/prettier-config");
+module.exports = require("fluse-prettier-config");

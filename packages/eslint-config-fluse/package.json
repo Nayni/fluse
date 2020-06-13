@@ -4,7 +4,7 @@
   "main": "src/index.js",
   "license": "MIT",
   "dependencies": {
-    "@fluse/prettier-config": "^1.0.0"
+    "fluse-prettier-config": "^1.0.0"
   },
   "devDependencies": {
     "prettier": "^2.0.5"
