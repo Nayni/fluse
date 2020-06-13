@@ -10,8 +10,11 @@
     "dist"
   ],
   "scripts": {
+    "clean": "rimraf ./dist",
     "lint": "eslint . --ext .ts",
-    "build": "tsc"
+    "compile": "tsc",
+    "build": "yarn clean && yarn compile",
+    "prepublishOnly": "yarn build"
   },
   "dependencies": {
     "lodash": "^4.17.15"
@@ -25,6 +28,7 @@
     "fluse-prettier-config": "1.0.0",
     "lint-staged": "10.2.2",
     "prettier": "2.0.5",
+    "rimraf": "^3.0.2",
     "typescript": "3.8.3"
   },
   "lint-staged": {

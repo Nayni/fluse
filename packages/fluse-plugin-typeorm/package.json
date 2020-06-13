@@ -1,6 +1,6 @@
 {
   "name": "fluse-plugin-typeorm",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "main": "dist/index.js",
   "license": "MIT",
   "directories": {
@@ -10,9 +10,12 @@
     "dist"
   ],
   "scripts": {
+    "clean": "rimraf ./dist",
     "lint": "eslint . --ext .ts",
-    "build": "tsc",
-    "example": "ts-node-dev --transpileOnly ./example/index.ts"
+    "compile": "tsc -p tsconfig.build.json",
+    "build": "yarn clean && yarn compile",
+    "example": "ts-node-dev --transpileOnly ./example/index.ts",
+    "prepublishOnly": "yarn build"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "2.30.0",
@@ -23,6 +26,7 @@
     "lint-staged": "10.2.2",
     "prettier": "2.0.5",
     "reflect-metadata": "^0.1.13",
+    "rimraf": "^3.0.2",
     "sqlite3": "^4.2.0",
     "ts-node-dev": "^1.0.0-pre.44",
     "typeorm": "^0.2.25",
