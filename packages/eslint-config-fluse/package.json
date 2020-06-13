@@ -2,6 +2,7 @@
   "name": "eslint-config-fluse",
   "version": "1.0.0",
   "main": "src/index.js",
+  "private": true,
   "license": "MIT",
   "dependencies": {
     "fluse-prettier-config": "^1.0.0"
