@@ -1,21 +1,21 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import _ from "lodash";
+import semver from "semver";
 import { Fixture, isFixture } from "./fixture";
-import {
-  composePluginExecutorMiddlewares,
-  ConfiguredPlugin,
-  Plugin,
-} from "./plugin";
+import { composePluginExecutorMiddlewares, Plugin } from "./plugin";
+
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const packageJson = require("../package.json");
 
 export type SeederOptions<T> = {
   fixture: Fixture<T>;
-  plugins?: Array<Plugin | ConfiguredPlugin>;
+  plugins?: Array<Plugin>;
 };
 
 export class Seeder<T> {
   private fixture: Fixture<T>;
-  private plugins: ConfiguredPlugin[];
+  private plugins: Plugin[];
 
   constructor(options: SeederOptions<T>) {
     if (!isFixture(options.fixture)) {
@@ -26,8 +26,7 @@ export class Seeder<T> {
     }
     this.fixture = options.fixture;
 
-    const plugins = options.plugins || [];
-    this.plugins = this.configurePlugins(plugins);
+    this.plugins = options.plugins || [];
     this.validatePlugins(this.plugins);
   }
 
@@ -55,7 +54,7 @@ export class Seeder<T> {
     await executor(this.fixture, {});
   }
 
-  private validatePlugins(plugins: ConfiguredPlugin[]) {
+  private validatePlugins(plugins: Plugin[]) {
     const duplicatePlugins = _.chain(plugins)
       .groupBy((p) => p.name)
       .pickBy((x) => x.length > 1)
@@ -65,22 +64,18 @@ export class Seeder<T> {
     if (duplicatePlugins.length > 0) {
       throw new Error(
         "Duplicate plugins found. It is not allowed to use a plugin more than once." +
-          `\nThe following plugins were found with duplicates: [ ${duplicatePlugins.join(
+          `\nThe following plugins were found with duplicates: ${duplicatePlugins.join(
             ", "
-          )} ].`
+          )}.`
       );
     }
 
-    // TODO: Version compatibility
-  }
-
-  private configurePlugins(plugins: Array<Plugin | ConfiguredPlugin>) {
-    const configuredPlugins: ConfiguredPlugin[] = [];
     plugins.forEach((plugin) => {
-      const configuredPlugin = _.isFunction(plugin) ? plugin({}) : plugin;
-      configuredPlugins.push(configuredPlugin);
+      if (!semver.satisfies(packageJson.version, plugin.version)) {
+        throw new Error(
+          `Plugin version (${plugin.version}) of '${plugin.name}' is not compatible with this version (${packageJson.version}) of fluse.`
+        );
+      }
     });
-
-    return configuredPlugins;
   }
 }

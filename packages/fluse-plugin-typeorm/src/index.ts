@@ -1,4 +1,4 @@
-import { Plugin } from "fluse";
+import { PluginFn } from "fluse";
 import {
   Connection,
   createConnection,
@@ -23,7 +23,7 @@ declare module "fluse" {
   }
 }
 
-const plugin: Plugin<TypeORMPluginConfig> = (config = {}) => {
+const plugin: PluginFn<TypeORMPluginConfig> = (config = {}) => {
   const { connection = "default", transaction = true } = config;
 
   const getOrCreateConnection = async () => {
@@ -39,7 +39,7 @@ const plugin: Plugin<TypeORMPluginConfig> = (config = {}) => {
 
   return {
     name: "typeorm",
-    version: "0.0.1",
+    version: "0.0.x",
     onCreateExecutor() {
       return async (fixture, next) => {
         const conn = await getOrCreateConnection();

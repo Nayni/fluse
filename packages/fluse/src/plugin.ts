@@ -14,7 +14,7 @@ export type ExecutorMiddlewareFn = (
   next: SeedExecutor
 ) => Promise<any>;
 
-export type Plugin<TConfig = any> = (
+export type PluginFn<TConfig = any> = (
   config?: Partial<TConfig>
 ) => {
   name: string;
@@ -22,7 +22,7 @@ export type Plugin<TConfig = any> = (
   onCreateExecutor?: () => ExecutorMiddlewareFn;
 };
 
-export type ConfiguredPlugin = ReturnType<Plugin>;
+export type Plugin = ReturnType<PluginFn>;
 
 export function isExecutorMiddlewareFn(
   value: any
@@ -31,7 +31,7 @@ export function isExecutorMiddlewareFn(
 }
 
 export async function composePluginExecutorMiddlewares<T>(
-  plugins: ConfiguredPlugin[],
+  plugins: Plugin[],
   executor: SeedExecutor<T>
 ) {
   let lastExecutor: SeedExecutor<any> = executor;
