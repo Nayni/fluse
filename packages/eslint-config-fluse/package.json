@@ -1,9 +1,14 @@
 {
   "name": "eslint-config-fluse",
+  "description": "The eslint rules used by fluse.",
   "version": "1.0.0",
   "main": "src/index.js",
   "private": true,
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Nayni/fluse.git"
+  },
   "dependencies": {
     "fluse-prettier-config": "^1.0.0"
   },

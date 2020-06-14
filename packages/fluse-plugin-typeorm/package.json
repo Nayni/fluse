@@ -1,8 +1,28 @@
 {
   "name": "fluse-plugin-typeorm",
+  "description": "Official TypeORM plugin for fluse.",
   "version": "0.0.1",
   "main": "dist/index.js",
   "license": "MIT",
+  "author": {
+    "name": "Rutger Hendrickx",
+    "url": "https://github.com/Nayni"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Nayni/fluse.git"
+  },
+  "keywords": [
+    "fluse",
+    "plugin",
+    "fluent",
+    "database",
+    "db",
+    "orm",
+    "seeder",
+    "fixture",
+    "typeorm"
+  ],
   "directories": {
     "dist": "dist"
   },

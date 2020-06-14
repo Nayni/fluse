@@ -1,8 +1,25 @@
 {
   "name": "fluse",
+  "description": "A fluent and extensible database seeder.",
   "version": "0.0.1",
   "main": "dist/index.js",
   "license": "MIT",
+  "author": {
+    "name": "Rutger Hendrickx",
+    "url": "https://github.com/Nayni"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Nayni/fluse.git"
+  },
+  "keywords": [
+    "fluent",
+    "database",
+    "db",
+    "orm",
+    "seeder",
+    "fixture"
+  ],
   "directories": {
     "dist": "dist"
   },
