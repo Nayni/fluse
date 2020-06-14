@@ -31,6 +31,7 @@
     "lint": "eslint . --ext .ts",
     "compile": "tsc",
     "build": "yarn clean && yarn compile",
+    "precommit": "lint-staged",
     "prepublishOnly": "yarn build"
   },
   "dependencies": {
@@ -51,8 +52,8 @@
     "typescript": "3.8.3"
   },
   "lint-staged": {
-    "*.ts": [
-      "eslint --max-warning 0",
+    "src/**/*.ts": [
+      "eslint --max-warnings=0",
       "prettier --write"
     ]
   }
