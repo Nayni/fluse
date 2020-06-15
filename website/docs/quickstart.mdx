@@ -1,0 +1,170 @@
+---
+id: quickstart
+title: Quickstart
+sidebar_label: Quickstart
+---
+
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+
+Install `Fluse` and the plugin that corresponds to your data access library.
+
+<Tabs
+  defaultValue="typeorm"
+  values={[
+    { label: 'TypeORM', value: 'typeorm', },
+    { label: 'Prisma2', value: 'prisma', },
+  ]
+}>
+<TabItem value="typeorm">
+
+using npm:
+
+```bash
+npm install fluse fluse-plugin-typeorm --save-dev
+```
+
+or yarn:
+
+```bash
+yarn add -D fluse fluse-plugin-typeorm
+```
+
+Define your entities using regular [TypeORM]() features.
+
+```typescript
+// src/entities/User.ts
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Post } from "./Post";
+
+@Entity()
+export class User {
+  @PrimaryGeneratedColumn("increment")
+  id!: string;
+
+  @Column()
+  username!: string;
+
+  @OneToMany(() => Post, (post) => post.author)
+  posts!: Post[];
+}
+```
+
+```typescript
+// src/entities/Post.ts
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { User } from "./User";
+
+@Entity()
+export class Post {
+  @PrimaryGeneratedColumn("increment")
+  id!: string;
+
+  @Column()
+  title!: string;
+
+  @ManyToOne(() => User, (user) => user.posts)
+  author!: User;
+}
+```
+
+Create your first fixture for the `User` entity.
+
+```typescript
+// src/fixtures/userFixture.ts
+import { fixture } from "fluse";
+import { User } from "./entities/User";
+
+type UserFixtureArgs = {
+  username: string;
+};
+
+export const userFixture = fixture({
+  async create(ctx, args: UserFixtureArgs) {
+    const user = new User();
+    user.username = args.username;
+    return ctx.typeorm.entityManager.save(user);
+  },
+});
+```
+
+Define your second fixture for the `Post` entity.
+
+```typescript
+// src/fixtures/postFixture.ts
+import { fixture } from "fluse";
+import { Post } from "./entities/Post";
+
+type PostFixtureArgs = {
+  author: User;
+};
+
+const postFixture = fixture({
+  async create(ctx, args: PostFixtureArgs) {
+    const posts = await Promise.all(
+      Array(2)
+        .fill(0)
+        .map((_, index) => {
+          const post = new Post();
+          post.title = `post ${index}`;
+          post.author = args.author;
+          return post;
+        })
+    );
+    return ctx.typeorm.entityManager.save(posts);
+  },
+});
+```
+
+Seed your database by using the `userFixture`.
+
+```typescript
+// src/seed.ts
+import { Seeder } from "fluse";
+import typeormPlugin from "fluse-plugin-typeorm";
+import { userFixture } from "./fixtures/userFixture";
+
+(async function main() {
+  const seeder = new Seeder({
+    fixture: userFixture("foo", { username: "foo" }),
+    plugins: [typeormPlugin()],
+  });
+
+  const fixtures = await seeder.seed();
+  // fixtures.foo.username === "foo";
+})();
+```
+
+or combine both and create a user with posts:
+
+```typescript
+// src/seed.ts
+import { combine, Seeder } from "fluse";
+import typeormPlugin from "fluse-plugin-typeorm";
+import { userFixture } from "./fixtures/userFixture";
+import { postFixture } from "./fixtures/postFixture";
+
+(async function main() {
+  const userWithPosts = combine()
+    .and(userFixture("foo", { username: "foo" }))
+    .and(({ foo }) => postFixture("fooPosts", { author: foo }))
+    .toFixture();
+
+  const seeder = new Seeder({
+    fixture: userWithPosts,
+    plugins: [typeormPlugin()],
+  });
+
+  const fixtures = await seeder.seed();
+  // fixtures.foo.username === "foo";
+  // fixtures.fooPosts.length === 2;
+})();
+```
+
+</TabItem>
+<TabItem value="prisma">
+
+TODO
+
+</TabItem>
+</Tabs>
