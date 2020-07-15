@@ -4,14 +4,14 @@ import _ from "lodash";
 import { Fixture } from "./fixture";
 import { isDefined } from "./utils";
 
-export type SeedExecutor<T = any, TContext = any> = (
+export type Executor<T = any, TContext = any> = (
   fixture: Fixture<T>,
   context?: TContext
 ) => Promise<T>;
 
 export type ExecutorMiddlewareFn = (
   fixture: Fixture<any>,
-  next: SeedExecutor
+  next: Executor
 ) => Promise<any>;
 
 export type PluginFn<TConfig = any> = (
@@ -32,9 +32,9 @@ export function isExecutorMiddlewareFn(
 
 export async function composePluginExecutorMiddlewares<T>(
   plugins: Plugin[],
-  executor: SeedExecutor<T>
+  executor: Executor<T>
 ) {
-  let lastExecutor: SeedExecutor<any> = executor;
+  let lastExecutor: Executor<any> = executor;
   for (const plugin of plugins.reverse()) {
     if (
       _.isNil(plugin.onCreateExecutor) ||
@@ -73,5 +73,5 @@ export async function composePluginExecutorMiddlewares<T>(
       });
     };
   }
-  return lastExecutor as SeedExecutor<T>;
+  return lastExecutor as Executor<T>;
 }

@@ -11,12 +11,10 @@ type FixtureCreateFn<TResult, TArgs> = (
 
 type FixtureOptions<TResult, TArgs> = {
   create: FixtureCreateFn<TResult, TArgs>;
-  remove?: (context: FixtureContext) => Promise<void>;
 };
 
 export type Fixture<T> = {
   create: (context: FixtureContext) => Promise<StrictlyRecord<T>>;
-  remove?: (context: FixtureContext) => Promise<void>;
 };
 
 type FixtureFn<TResult, TFixtures> = (fixtures: TFixtures) => Fixture<TResult>;
@@ -55,10 +53,7 @@ export function fixture<TResult, TArgs = false>(
       };
     };
 
-    return {
-      create,
-      remove: config.remove,
-    };
+    return { create };
   } as any;
 }
 
@@ -134,26 +129,6 @@ export class CombinedFixtureBuilder<TFixtures extends {} = {}> {
         }
 
         return fixtures as StrictlyRecord<TFixtures>;
-      },
-      remove: async (context) => {
-        const fixtures: Record<string, any> = {};
-        for (const fixtureFn of this.fixtureFns.reverse()) {
-          const fixture = fixtureFn(fixtures);
-
-          if (!isFixture(fixture)) {
-            throw new Error(
-              "An unexpected error occured while executing fixture combination: " +
-                "A fixture function did not return a valid fixture." +
-                "\n\nA valid fixture is a plain object with a 'create' method."
-            );
-          }
-
-          if (_.isNil(fixture.remove) || !_.isFunction(fixture.remove)) {
-            continue;
-          }
-
-          await fixture.remove(context);
-        }
       },
     };
   }

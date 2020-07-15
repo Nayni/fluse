@@ -1,4 +1,4 @@
-import { combine, fixture, Seeder } from "fluse";
+import { combine, execute, fixture } from "fluse";
 import "reflect-metadata";
 import { createConnection } from "typeorm";
 import typeormPlugin from "../src";
@@ -9,7 +9,6 @@ type UserFixtureArgs = {
   username: string;
 };
 
-/** A fixture with arguments, returning an object */
 const userFixture = fixture({
   async create(ctx, args: UserFixtureArgs) {
     const user = new User();
@@ -22,7 +21,6 @@ type PostFixtureArgs = {
   author: User;
 };
 
-/** A fixture with arguments, returning an array */
 const postFixture = fixture({
   async create(ctx, args: PostFixtureArgs) {
     const posts = await Promise.all(
@@ -39,26 +37,23 @@ const postFixture = fixture({
   },
 });
 
-async function testTypeORMPlugin() {
+async function run() {
   const userWithPosts = combine()
     .and(userFixture("foo", { username: "foo" }))
     .and(({ foo }) => postFixture("fooPosts", { author: foo }))
     .toFixture();
 
-  const seeder = new Seeder({
-    fixture: userWithPosts,
+  const result = await execute(userWithPosts, {
     plugins: [typeormPlugin({ connection: "default", transaction: true })],
   });
-
-  const fixtures = await seeder.seed();
-  console.log(fixtures);
+  console.log(result);
 }
 
 createConnection()
   .then(async (connection) => {
     await connection.synchronize(true);
   })
-  .then(testTypeORMPlugin)
+  .then(run)
   .then(() => {
     console.log("Done");
     process.exit(0);
