@@ -2,4 +2,4 @@
 
 # Fluse
 
-A fluent and extensible database seeder.
+A fluent and extensible fixture builder.

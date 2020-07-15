@@ -7,68 +7,34 @@ sidebar_label: Quickstart
 import Tabs from "@theme/Tabs";
 import TabItem from "@theme/TabItem";
 
-Install `Fluse` and the plugin that corresponds to your data access library.
+### 1. Install `Fluse`
 
 <Tabs
-  defaultValue="typeorm"
+  defaultValue="yarn"
   values={[
-    { label: 'TypeORM', value: 'typeorm', },
-    { label: 'Prisma2', value: 'prisma', },
+    { label: 'yarn', value: 'yarn', },
+    { label: 'npm', value: 'npm', },
   ]
 }>
-<TabItem value="typeorm">
 
-using npm:
-
-```bash
-npm install fluse fluse-plugin-typeorm --save-dev
-```
-
-or yarn:
+<TabItem value="npm">
 
 ```bash
-yarn add -D fluse fluse-plugin-typeorm
+npm install fluse --save-dev
 ```
 
-Define your entities using regular [TypeORM]() features.
+</TabItem>
+<TabItem value="yarn">
 
-```typescript
-// src/entities/User.ts
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
-import { Post } from "./Post";
-
-@Entity()
-export class User {
-  @PrimaryGeneratedColumn("increment")
-  id!: string;
-
-  @Column()
-  username!: string;
-
-  @OneToMany(() => Post, (post) => post.author)
-  posts!: Post[];
-}
+```bash
+yarn add -D fluse
 ```
 
-```typescript
-// src/entities/Post.ts
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
-import { User } from "./User";
+</TabItem>
 
-@Entity()
-export class Post {
-  @PrimaryGeneratedColumn("increment")
-  id!: string;
+</Tabs>
 
-  @Column()
-  title!: string;
-
-  @ManyToOne(() => User, (user) => user.posts)
-  author!: User;
-}
-```
-
-Create your first fixture for the `User` entity.
+### 2. Define your basic fixtures
 
 ```typescript
 // src/fixtures/userFixture.ts
@@ -81,90 +47,66 @@ type UserFixtureArgs = {
 
 export const userFixture = fixture({
   async create(ctx, args: UserFixtureArgs) {
-    const user = new User();
-    user.username = args.username;
-    return ctx.typeorm.entityManager.save(user);
+    const user = new User({ username: args.username });
+    return user;
   },
 });
 ```
-
-Define your second fixture for the `Post` entity.
 
 ```typescript
 // src/fixtures/postFixture.ts
 import { fixture } from "fluse";
 import { Post } from "./entities/Post";
 
-type PostFixtureArgs = {
+type PostsFixtureArgs = {
   author: User;
 };
 
-const postFixture = fixture({
-  async create(ctx, args: PostFixtureArgs) {
-    const posts = await Promise.all(
-      Array(2)
-        .fill(0)
-        .map((_, index) => {
-          const post = new Post();
-          post.title = `post ${index}`;
-          post.author = args.author;
-          return post;
-        })
-    );
-    return ctx.typeorm.entityManager.save(posts);
+const postsFixture = fixture({
+  async create(ctx, args: PostsFixtureArgs) {
+    return Array(10).fill(0).map((_, index) => {
+      const post = new Post({
+        title: `post ${index}`,
+        author: args.author,
+      });
+      return post;
+    });
   },
 });
 ```
 
-Seed your database by using the `userFixture`.
+### 3. Combine them together
 
 ```typescript
 // src/seed.ts
-import { Seeder } from "fluse";
-import typeormPlugin from "fluse-plugin-typeorm";
-import { userFixture } from "./fixtures/userFixture";
-
-(async function main() {
-  const seeder = new Seeder({
-    fixture: userFixture("foo", { username: "foo" }),
-    plugins: [typeormPlugin()],
-  });
-
-  const fixtures = await seeder.seed();
-  // fixtures.foo.username === "foo";
-})();
-```
-
-or combine both and create a user with posts:
-
-```typescript
-// src/seed.ts
-import { combine, Seeder } from "fluse";
-import typeormPlugin from "fluse-plugin-typeorm";
+import { combine } from "fluse";
 import { userFixture } from "./fixtures/userFixture";
 import { postFixture } from "./fixtures/postFixture";
 
-(async function main() {
-  const userWithPosts = combine()
-    .and(userFixture("foo", { username: "foo" }))
-    .and(({ foo }) => postFixture("fooPosts", { author: foo }))
-    .toFixture();
-
-  const seeder = new Seeder({
-    fixture: userWithPosts,
-    plugins: [typeormPlugin()],
-  });
-
-  const fixtures = await seeder.seed();
-  // fixtures.foo.username === "foo";
-  // fixtures.fooPosts.length === 2;
-})();
+const userWithPostsFixture = combine()
+  .and(userFixture("foo", { username: "foo" }))
+  .and(({ foo }) => postFixture("fooPosts", { author: foo }))
+  .toFixture();
 ```
 
-</TabItem>
-<TabItem value="prisma">
+### 4. Use them in your tests
 
-TODO
+```typescript
+import { combine, execute } from "fluse";
+import { userFixture } from "./fixtures/userFixture";
+import { postFixture } from "./fixtures/postFixture";
 
-</TabItem>
-</Tabs>
+const userWithPostsFixture = combine()
+  .and(userFixture("foo", { username: "foo" }))
+  .and(({ foo }) => postFixture("fooPosts", { author: foo }))
+  .toFixture();
+
+describe("bar", () => {
+  it("should return the first post of a user.", async () => {
+    const { foo, fooPosts } = await execute(userWithPostsFixture);
+
+    const actual = bar(foo);
+    expect(actual.title).toBe(fooPosts[0].title);
+  });
+});
+```

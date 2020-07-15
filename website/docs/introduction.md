@@ -4,130 +4,123 @@ title: Introduction
 sidebar_label: Introduction
 ---
 
-Fluse is a database seeder. It focusses on giving you a **fluent** and **extensible** api to build up **data fixtures** which you can use to seed any underlying database either via the CLI or in code.
+Fluse is a fixture builder. It provides you with a **fluent** and **extensible** api to build up **data fixtures**.
 
-### Why Fluse?
+## Why Fluse?
 
-Building re-usable and quality data fixtures is hard.
+As applications grow in complexity the data sets required to test a specific use-case of your business logic will too.
 
-The majority of logic in an average application resolves around manipulating data in a specific state, testing a piece of code that operates on a data model in a specific state quickly is very valuable. However as your domain model grows managing all these data sets becomes harder and harder.
+Maintaining a healthy set of data fixtures used for testing can be challenging.
 
-Many projects already leverage existing tools such as ORM's or Query Builders to define and interact with their data models. While these tools give you a great database abstraction they usually fall short when it comes to managing data fixtures.
+Certain database tools such popular ORM's regularly provide you with a means to seed data into a database as means of providing initial data. These solutions however start to show their shortcommings when you extend data fixtures to your tests.
 
-This is where Fluse comes in. Fluse allows you to build up small and re-usable data fixture blocks in a fluent, extensible and type-safe way.
+Fluse tries to provide you with simple yet powerful api to build up data fixtures and optionally seed them to your database of choice.
 
-### How does Fluse work?
+The focus of Fluse is **not** to be a database seeding solution, it's primary goal is to help you in building and maintaining a healthy set of data fixtures to test your business logic. However Fluse does provide plugins to interact with your database or ORM of choice.
+
+## What is Fluse?
 
 Fluse consists of the following parts:
 
-- `fluse`: The core providing you with building blocks for data fixtures and a database seeder to execute them.
-- `fluse-cli`: A CLI to interact with Fluse from the command line.
+- `fluse`: The core providing you with building blocks to compose your data fixtures and execute them.
 - `fluse-plugins`: A set of extensions to Fluse allowing you to connect Fluse to your favorite library, take a look at our official plugins!
+- `fluse-cli`: A CLI to interact with Fluse from the command line.
 
-#### Fixtures
+## What is a fixture?
 
-A major building block of Fluse is a `fixture`.
+A fixture (or data fixture) is a function that knows how to create a certain type of object within your system.
 
-A `fixture` is the smallest piece to create re-usable data sets to seed into your database. Defining a `fixture` is very simple:
+This might sound a little vague so let's give you an example!
+
+If you are building an application that interacts with users you might have a `User` object to represent such a user. Creating a user can be simple at first:
 
 ```typescript
-import { fixture } from "fluse";
-import { User } from "./entities/User";
-
-const userFixture = fixture({
-  async create(ctx) {
-    const user = new User({ username: "fluse" });
-    return ctx.db.save(user);
-  },
-});
+const user = new User({ username: "Bob" });
 ```
 
-A `fixture` requires you to implement a single method: `create`. The `create` function of your `fixture` is responsible for one thing: create a data object and store it into the database of your choice. You receive access to your database connection by getting it from the `context` object passed in.
-
-Find out more about what you can do with fixtures in our [Fixture section]() such as:
-
-- [Supplying arguments]()
-- [Combining fixtures]()
-- [The remove method]()
-
-#### Seeder
-
-Once you have defined your fixture(s) you'll want to execute them against your database by using the `Seeder`.
-
-The `Seeder` is responsible for creating (or deleting) a fixture into your database. Using the example above this would look something like this:
+But the system grows and the `User` class starts to hold more state than just the username. The `activated` state gets introduced and the application will behave differently based on this state. Getting to this new `activated` state takes just a couple of steps...
 
 ```typescript
-const seeder = new Seeder({
-  fixture: userFixture("user"),
-  plugins: [databasePlugin()],
-});
-
-const fixtures = await seeder.seed();
-// fixtures.user.username === "fluse";
+const user = new User({ username: "Alice" });
+user.performBackgroundCheck();
+user.validateVerificationCode("abc");
+user.confirmSMSCode("123");
+// 25 more steps to take...
+user.performFinalStep();
+user.activated; // true
 ```
 
-A `Seeder` takes a fixture and an optional set of plugins to execute your fixture against the underlying database. You can create your fixture by calling `seed()`.
-
-In order for the `userFixture` to be used by the `Seeder` you have to invoke it with a name. This name is used to give you back the data that was created on a key of the result by calling `seed()`. The benefits the name becomes more apparant when you start [combining multiple fixtures]().
-
-In addition to a fixture you can also specify a list of plugins to use. Plugins are a way to give Fluse access to your database of choice and use whatever library you wish for database access. Read more about plugins and their usage in our [plugin section]()
-
-You can find a more in-depth look into the `Seeder` API in the [Seeder section]()
-
-### Why does Fluse return me the created fixtures?
-
-When you seed your fixtures into the databse Fluse will return you the exact data set that was just created. It knows the structure of this data set by using the type information of all your individual fixtures and the names you have given them.
-
-One of the biggest problems with testing your logic against random data is that... well it's random! By returning you the exact data set that was just created you now have to power to assert your logic against possible outputs, even though your input might contain randomized data.
-
-Given the following logic:
+This means that writing a test where the input is an activated user you have to:
 
 ```typescript
-export class User {
-  constructor(public username: string) {}
-}
+describe("foo", () => {
+  it("should return true for an activated user", () => {
+    const user = new User({ username: "Alice" });
+    user.performBackgroundCheck();
+    user.validateVerificationCode("abc");
+    user.confirmSMSCode("123");
+    // 25 more steps to take...
+    user.performFinalStep();
 
-export class UserService {
-  getWelcomemMessage(id: number) {
-    const user = this.repository.findOne(id);
-    return `Welcome ${user.username}!`;
-  }
-}
-```
+    const actual = fooService.doSomething(user);
 
-We can now test our API against this, even though a username might be randomly generated.
-
-```typescript
-const randomUserFixture = fixture({
-  async create(ctx) {
-    const user = new User(faker.internet.userName());
-    return ctx.repository.save(user);
-  },
-});
-```
-
-```typescript
-// src/UserService.test.ts
-describe("getWelcomemMessage", () => {
-  it("should contain the user's username", async () => {
-    // Arrange
-    const seeder = new Seeder({
-      fixture: randomUserFixture("user"),
-      plugins: [databasePlugin()],
-    });
-
-    const fixtures = await seeder.seed();
-
-    // Act
-    const userService = new UserService();
-    const message = await userService.getWelcomemMessage(fixtures.user.id);
-
-    // Assert
-    expect(message).toContain(fixtures.user.username);
+    expect(actual).toBe(true);
   });
 });
 ```
 
-Tests like the one above is what is called a [Black-box test](https://en.wikipedia.org/wiki/Black-box_testing). It doesn't try to asset on which internal methods are being called instead it focusses on functionality that is expected by looking at the output.
+As the above shows, the test becomes cluttered with just creating the input for the test. This is irrelevant for the actual test, it doesn't care how this user got to this state, it only cares that it is.
 
-Writing Black-box tests with Fluse becomes incredibly easy because you always have access to the input data set as well as your logic that is operating on this data.
+With Fluse you define a **fixture** to create such a user **once**:
+
+```typescript
+// src/fixtures/users.ts
+import { fixture } from "fluse";
+import { User } from "./entities/User";
+
+type Args = {
+  username: string;
+};
+
+export const activatedUserFixture = fixture({
+  async create(ctx, args: Args) {
+    const user = new User({ username: args.username });
+    user.performBackgroundCheck();
+    user.validateVerificationCode("abc");
+    user.confirmSMSCode("123");
+    // 25 more steps to take...
+    user.performFinalStep();
+    return user;
+  },
+});
+```
+
+Writing the same test now becomes:
+
+```typescript
+// src/fooService.test.ts
+import { execute } from "fluse";
+import { activatedUserFixture } from "./fixtures/users";
+
+describe("foo", () => {
+  it("should return true for an activated user", async () => {
+    const { userBob } = await execute(
+      activatedUserFixture("userBob", { username: "Bob" })
+    );
+    const actual = fooService.doSomething(userBob);
+    expect(actual).toBe(true);
+  });
+});
+```
+
+Notice how the test got de-cluttered from all the setup code. We can focus on the thing we are testing and not the input we need.
+
+As a bonus the fixture is also re-usable for any other test that might need an activated user.
+
+> You might have noticed the `"userBob"` as first argument to `activatedUserFixture`. This is a requirement by Fluse and is a unique name for the created fixture. The advantages of this name will become clear when you start [combining fixtures]().
+
+Find out more about what you can do with fixtures in our [Fixture section]() such as:
+
+- [Supplying arguments]()
+- [Accessing context]()
+- [Combining fixtures]()
