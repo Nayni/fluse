@@ -1,7 +1,7 @@
 {
   "name": "fluse-prettier-config",
   "description": "The prettier config used by fluse.",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "main": "src/index.js",
   "license": "MIT",
