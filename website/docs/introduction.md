@@ -4,19 +4,26 @@ title: Introduction
 sidebar_label: Introduction
 ---
 
-Fluse is a fixture builder. It provides you with a **fluent** and **extensible** api to build up **data fixtures**.
+Fluse is a fixture builder. It enables you to build up **data fixtures** in a **fluent** and **type-safe** way.
 
 ## Why Fluse?
 
-As applications grow in complexity the data sets required to test a specific use-case of your business logic will too.
+Testing business logic requires input data. As applications grow in complexity providing that input data becomes more and more complex:
 
-Maintaining a healthy set of data fixtures used for testing can be challenging.
+- entities in the system become interconnected
+- getting an entity into a specific state for testing requires a (large) series of steps
+- data might have to be seeded into a database because you are integration testing
 
-Certain database tools such popular ORM's regularly provide you with a means to seed data into a database as means of providing initial data. These solutions however start to show their shortcommings when you extend data fixtures to your tests.
+Maintaining a healthy set of data fixtures for medium to large projects can be challenging. It requires a bunch of code just to create data. However this code isn't really part of the application, it's primary goal is to facilitate testing.
 
-Fluse tries to provide you with simple yet powerful api to build up data fixtures and optionally seed them to your database of choice.
+Popular ORM's today usually come with a solution to seed data into your database. These solutions however start to fall short when you start using them intensivly:
 
-The focus of Fluse is **not** to be a database seeding solution, it's primary goal is to help you in building and maintaining a healthy set of data fixtures to test your business logic. However Fluse does provide plugins to interact with your database or ORM of choice.
+- they are tied to the ORM solution and don't work without a database
+- they are usually implemented in the form of migrations and are not re-usable nor type-safe
+
+Fluse is a tool specifically designed to help you in making **re-usable** and **type-safe** data fixtures. It allows you to define **small** and **composable** building blocks for creating test data.
+
+Fluse doesn't tie itself to any ORM solution and works perfectly without any database.
 
 ## What is Fluse?
 
@@ -26,19 +33,19 @@ Fluse consists of the following parts:
 - `fluse-plugins`: A set of extensions to Fluse allowing you to connect Fluse to your favorite library, take a look at our official plugins!
 - `fluse-cli`: A CLI to interact with Fluse from the command line.
 
-## What is a fixture?
+## What is a data fixture?
 
-A fixture (or data fixture) is a function that knows how to create a certain type of object within your system.
+A data fixture (or fixture) is a function that knows how to create a certain type of object within your system.
 
 This might sound a little vague so let's give you an example!
 
-If you are building an application that interacts with users you might have a `User` object to represent such a user. Creating a user can be simple at first:
+If you are building an application that interacts with users you will have some type of `User` object to represent such a user. Creating an instance of such a user can be simple at first:
 
 ```typescript
 const user = new User({ username: "Bob" });
 ```
 
-But the system grows and the `User` class starts to hold more state than just the username. The `activated` state gets introduced and the application will behave differently based on this state. Getting to this new `activated` state takes just a couple of steps...
+But your system grows and the `User` object starts to hold more state than just the username. The `activated` state gets introduced and the application will behave differently based on this state. Getting to this new `activated` state takes _only_ a couple of steps...
 
 ```typescript
 const user = new User({ username: "Alice" });
@@ -47,7 +54,7 @@ user.validateVerificationCode("abc");
 user.confirmSMSCode("123");
 // 25 more steps to take...
 user.performFinalStep();
-user.activated; // true
+user.isActivated(); // true
 ```
 
 This means that writing a test where the input is an activated user you have to:
@@ -69,7 +76,7 @@ describe("foo", () => {
 });
 ```
 
-As the above shows, the test becomes cluttered with just creating the input for the test. This is irrelevant for the actual test, it doesn't care how this user got to this state, it only cares that it is.
+As the above shows, the test becomes cluttered with just creating the input for the test. The test itself however doesn't really care how this user got into this state, it only cares that it is in the `activated` state.
 
 With Fluse you define a **fixture** to create such a user **once**:
 
@@ -113,11 +120,13 @@ describe("foo", () => {
 });
 ```
 
-Notice how the test got de-cluttered from all the setup code. We can focus on the thing we are testing and not the input we need.
+Notice how the test becomes a lot cleaner because we've moved all the setup code for an `activated` user into its own fixture. We can focus on the thing we are testing and not the input we need.
 
 As a bonus the fixture is also re-usable for any other test that might need an activated user.
 
-> You might have noticed the `"userBob"` as first argument to `activatedUserFixture`. This is a requirement by Fluse and is a unique name for the created fixture. The advantages of this name will become clear when you start [combining fixtures]().
+:::note
+You might have noticed the `"userBob"` as a first argument to `activatedUserFixture`. This is a requirement by Fluse, it's a unique name for the created fixture. The advantages of this name will become clear when you start [combining fixtures]().
+:::
 
 Find out more about what you can do with fixtures in our [Fixture section]() such as:
 
