@@ -15,5 +15,15 @@ module.exports = {
         "context",
       ],
     },
+    {
+      type: "category",
+      label: "API Reference",
+      items: ["api-fixture", "api-combine", "api-execute"],
+    },
+    {
+      type: "category",
+      label: "Plugins",
+      items: ["plugin-typeorm"],
+    },
   ],
 };
