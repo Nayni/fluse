@@ -31,7 +31,6 @@ Fluse consists of the following parts:
 
 - `fluse`: The core providing you with building blocks to compose your data fixtures and execute them.
 - `fluse-plugins`: A set of extensions to Fluse allowing you to connect Fluse to your favorite library, take a look at our official plugins!
-- `fluse-cli`: A CLI to interact with Fluse from the command line.
 
 ## What is a data fixture?
 
