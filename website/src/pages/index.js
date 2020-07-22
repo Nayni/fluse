@@ -8,32 +8,24 @@ import styles from "./styles.module.css";
 
 const features = [
   {
-    title: <>Easy to Use</>,
-    imageUrl: "img/undraw_docusaurus_mountain.svg",
+    title: <>Fluent</>,
     description: (
       <>
-        Docusaurus was designed from the ground up to be easily installed and
-        used to get your website up and running quickly.
+        Fluse let's you build small fixtures and you combine them together using
+        a fluent builder API.
       </>
     ),
   },
   {
-    title: <>Focus on What Matters</>,
-    imageUrl: "img/undraw_docusaurus_tree.svg",
-    description: (
-      <>
-        Docusaurus lets you focus on your docs, and we&apos;ll do the chores. Go
-        ahead and move your docs into the <code>docs</code> directory.
-      </>
-    ),
+    title: <>Type-safe</>,
+    description: <>Fluse is built with and for TypeScript.</>,
   },
   {
-    title: <>Powered by React</>,
-    imageUrl: "img/undraw_docusaurus_react.svg",
+    title: <>Extensible</>,
     description: (
       <>
-        Extend or customize your website layout by reusing React. Docusaurus can
-        be extended while reusing the same header and footer.
+        Extend or customize the execution of your fixture by using one of our
+        plugins or create your own!
       </>
     ),
   },
@@ -58,10 +50,7 @@ function Home() {
   const context = useDocusaurusContext();
   const { siteConfig = {} } = context;
   return (
-    <Layout
-      title={`Hello from ${siteConfig.title}`}
-      description="Description will go into a meta tag in <head />"
-    >
+    <Layout title="Home" description={`${siteConfig.tagline}`}>
       <header className={classnames("hero hero--primary", styles.heroBanner)}>
         <div className="container">
           <h1 className="hero__title">{siteConfig.title}</h1>
@@ -69,7 +58,7 @@ function Home() {
           <div className={styles.buttons}>
             <Link
               className={classnames(
-                "button button--outline button--secondary button--lg",
+                "button button--outline button--lg",
                 styles.getStarted
               )}
               to={useBaseUrl("docs/")}

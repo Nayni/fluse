@@ -1,11 +1,11 @@
 module.exports = {
   title: "Fluse",
-  tagline: "Fluently seed your database",
+  tagline: "Build fluent and type-safe fixtures.",
   url: "https://your-docusaurus-test-site.com",
   baseUrl: "/",
   favicon: "img/favicon.ico",
-  organizationName: "facebook", // Usually your GitHub org/user name.
-  projectName: "docusaurus", // Usually your repo name.
+  organizationName: "nayni",
+  projectName: "fluse",
   themeConfig: {
     sidebarCollapsible: false,
     navbar: {
@@ -35,47 +35,35 @@ module.exports = {
           title: "Docs",
           items: [
             {
-              label: "Style Guide",
-              to: "docs/",
+              label: "Quickstart",
+              to: "docs/quickstart",
             },
             {
-              label: "Second Doc",
-              to: "docs/doc2/",
+              label: "Introduction",
+              to: "docs/introduction",
             },
           ],
         },
         {
-          title: "Community",
+          title: "Social",
           items: [
-            {
-              label: "Stack Overflow",
-              href: "https://stackoverflow.com/questions/tagged/docusaurus",
-            },
-            {
-              label: "Discord",
-              href: "https://discordapp.com/invite/docusaurus",
-            },
-            {
-              label: "Twitter",
-              href: "https://twitter.com/docusaurus",
-            },
-          ],
-        },
-        {
-          title: "More",
-          items: [
-            {
-              label: "Blog",
-              to: "blog",
-            },
             {
               label: "GitHub",
+              href: "https://github.com/Nayni/fluse",
+            },
+          ],
+        },
+        {
+          title: "Built with",
+          items: [
+            {
+              label: "Docusaurus",
               href: "https://github.com/facebook/docusaurus",
             },
           ],
         },
       ],
-      copyright: `Copyright © ${new Date().getFullYear()} My Project, Inc. Built with Docusaurus.`,
+      copyright: `Copyright © ${new Date().getFullYear()} Rutger Hendrickx.`,
     },
   },
   presets: [
