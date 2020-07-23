@@ -2,7 +2,7 @@
 
 import _ from "lodash";
 import { Fixture } from "./fixture";
-import { isDefined } from "./utils";
+import { isDefined, MaybePromise } from "./utils";
 
 export type Executor<T = any, TContext = any> = (
   fixture: Fixture<T>,
@@ -20,6 +20,8 @@ export type PluginFn<TConfig = any> = (
   name: string;
   version: string;
   onCreateExecutor?: () => ExecutorMiddlewareFn;
+  onBefore?: () => MaybePromise<void>;
+  onAfter?: () => MaybePromise<void>;
 };
 
 export type Plugin = ReturnType<PluginFn>;
@@ -30,7 +32,7 @@ export function isExecutorMiddlewareFn(
   return !_.isNil(value) && _.isFunction(value);
 }
 
-export async function composePluginExecutorMiddlewares<T>(
+export function composePluginExecutorMiddlewares<T>(
   plugins: Plugin[],
   executor: Executor<T>
 ) {
@@ -74,4 +76,26 @@ export async function composePluginExecutorMiddlewares<T>(
     };
   }
   return lastExecutor as Executor<T>;
+}
+
+export function composePluginBeforeHooks(plugins: Plugin[]) {
+  return async () => {
+    for (const plugin of plugins) {
+      if (_.isNil(plugin.onBefore) || !_.isFunction(plugin.onBefore)) {
+        continue;
+      }
+      await plugin.onBefore();
+    }
+  };
+}
+
+export function composePluginAfterHooks(plugins: Plugin[]) {
+  return async () => {
+    for (const plugin of plugins) {
+      if (_.isNil(plugin.onAfter) || !_.isFunction(plugin.onAfter)) {
+        continue;
+      }
+      await plugin.onAfter();
+    }
+  };
 }

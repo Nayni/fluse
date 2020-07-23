@@ -1,7 +1,12 @@
 import _ from "lodash";
 import semver from "semver";
 import { Fixture, isFixture } from "./fixture";
-import { composePluginExecutorMiddlewares, Plugin } from "./plugin";
+import {
+  composePluginAfterHooks,
+  composePluginBeforeHooks,
+  composePluginExecutorMiddlewares,
+  Plugin,
+} from "./plugin";
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const packageJson = require("../package.json");
@@ -35,8 +40,8 @@ function validatePlugins(plugins: Plugin[]) {
   });
 }
 
-async function createExecutor<TResult>(plugins: Plugin[]) {
-  const executor = await composePluginExecutorMiddlewares<TResult>(
+function createExecutor<TResult>(plugins: Plugin[]) {
+  const executor = composePluginExecutorMiddlewares<TResult>(
     plugins,
     (fixture, context) => fixture.create(context)
   );
@@ -60,6 +65,12 @@ export async function execute<TResult>(
 
   validatePlugins(plugins);
 
-  const executor = await createExecutor(plugins);
-  return executor(fixture, rootContext);
+  const beforeHooks = composePluginBeforeHooks(plugins);
+  const afterHooks = composePluginAfterHooks(plugins);
+  const executor = createExecutor<TResult>(plugins);
+
+  await beforeHooks();
+  const result = await executor(fixture, rootContext);
+  await afterHooks();
+  return result;
 }
