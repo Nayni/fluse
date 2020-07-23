@@ -33,9 +33,13 @@ The `typeorm` key will become available on the [context]() as you use this plugi
 ```
 typeormPlugin(config?: {
   connection?: Connection | string;
-  transaction?: boolean
+  transaction?: boolean;
+  synchronize?: boolean;
+  dropBeforeSync?: boolean;
 }) => Plugin
 ```
 
 - `connection` **(optional)**: The name of the connection, or an instance of a TypeORM connection.
 - `transaction` **(optional)**: Run the fixture (or combined fixtures) in a single transaction, rolling back if something fails.
+- `synchronize` **(optional)**: Synchronize the database before running the fixture.
+- `dropBeforeSync` **(optional)**: Drop the database entirely before sychronizing.
