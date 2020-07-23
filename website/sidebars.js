@@ -23,7 +23,7 @@ module.exports = {
     {
       type: "category",
       label: "Plugins",
-      items: ["plugin-typeorm"],
+      items: ["plugin-typeorm", "plugin-faker"],
     },
   ],
 };
