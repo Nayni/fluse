@@ -8,6 +8,10 @@ module.exports = {
   projectName: "fluse",
   themeConfig: {
     sidebarCollapsible: false,
+    prism: {
+      theme: require("prism-react-renderer/themes/github"),
+      darkTheme: require("prism-react-renderer/themes/dracula"),
+    },
     navbar: {
       title: "Fluse",
       logo: {
