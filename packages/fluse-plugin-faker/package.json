@@ -1,0 +1,58 @@
+{
+  "name": "fluse-plugin-faker",
+  "description": "Official Faker plugin for Fluse.",
+  "version": "0.0.1",
+  "main": "dist/index.js",
+  "license": "MIT",
+  "author": {
+    "name": "Rutger Hendrickx",
+    "url": "https://github.com/Nayni"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Nayni/fluse.git"
+  },
+  "keywords": [
+    "fluse",
+    "plugin",
+    "fluent",
+    "fixture",
+    "faker"
+  ],
+  "directories": {
+    "dist": "dist"
+  },
+  "files": [
+    "lib"
+  ],
+  "scripts": {
+    "clean": "rimraf ./dist",
+    "lint": "eslint . --ext .ts",
+    "compile": "tsc",
+    "build": "yarn clean && yarn compile",
+    "precommit": "lint-staged",
+    "prepublishOnly": "yarn build"
+  },
+  "devDependencies": {
+    "@types/faker": "^4.1.12",
+    "@typescript-eslint/eslint-plugin": "2.30.0",
+    "@typescript-eslint/parser": "2.30.0",
+    "eslint": "6.8.0",
+    "eslint-config-fluse": "^1.0.1",
+    "fluse-prettier-config": "^1.0.1",
+    "lint-staged": "10.2.2",
+    "prettier": "2.0.5",
+    "rimraf": "^3.0.2",
+    "typescript": "3.8.3"
+  },
+  "peerDependencies": {
+    "faker": "^4.1.0",
+    "fluse": "^0.0.2"
+  },
+  "lint-staged": {
+    "*.ts": [
+      "eslint --max-warnings=0",
+      "prettier --write"
+    ]
+  }
+}
