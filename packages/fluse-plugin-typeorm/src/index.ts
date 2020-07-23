@@ -10,6 +10,8 @@ import {
 type TypeORMPluginConfig = {
   connection: Connection | string;
   transaction?: boolean;
+  synchronize?: boolean;
+  dropBeforeSync?: boolean;
 };
 
 type TypeORMContext = {
@@ -24,7 +26,12 @@ declare module "fluse" {
 }
 
 const plugin: PluginFn<TypeORMPluginConfig> = (config = {}) => {
-  const { connection = "default", transaction = true } = config;
+  const {
+    connection = "default",
+    transaction = true,
+    synchronize = false,
+    dropBeforeSync = false,
+  } = config;
 
   const getOrCreateConnection = async () => {
     if (connection instanceof Connection) {
@@ -40,22 +47,28 @@ const plugin: PluginFn<TypeORMPluginConfig> = (config = {}) => {
   return {
     name: "typeorm",
     version: "0.0.x",
+    async onBefore() {
+      if (synchronize) {
+        const connection = await getOrCreateConnection();
+        await connection.synchronize(dropBeforeSync);
+      }
+    },
     onCreateExecutor() {
       return async (fixture, next) => {
-        const conn = await getOrCreateConnection();
+        const connection = await getOrCreateConnection();
 
         if (transaction) {
-          return conn.transaction(async (entityManager) => {
+          return connection.transaction(async (entityManager) => {
             const result = await next(fixture, {
-              connection: conn,
+              connection,
               entityManager,
             });
             return result;
           });
         } else {
           const result = await next(fixture, {
-            connection: conn,
-            entityManager: conn.createEntityManager(),
+            connection,
+            entityManager: connection.createEntityManager(),
           });
           return result;
         }
