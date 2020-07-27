@@ -49,6 +49,12 @@ function createExecutor<TResult>(plugins: Plugin[]) {
   return executor;
 }
 
+/**
+ * Executes a given fixture.
+ *
+ * @param fixture The fixture to execute, can be a single fixture or a combined fixture.
+ * @param options Additional options to use during execution. Primarily used to define any plugins to include at runtime.
+ */
 export async function execute<TResult>(
   fixture: Fixture<TResult>,
   options?: ExecuteOptions
@@ -56,7 +62,7 @@ export async function execute<TResult>(
   if (!isFixture(fixture)) {
     throw new Error(
       "The provided fixture is not valid." +
-        "\n\nA valid fixture is a plain object with a 'create' method."
+        "\n\nA valid fixture should be created by 'fixture()' or 'combine()'"
     );
   }
 

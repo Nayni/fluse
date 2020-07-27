@@ -1,6 +1,6 @@
 {
   "name": "fluse",
-  "description": "A fluent and extensible database seeder.",
+  "description": "A fluent and type-safe fixture builder.",
   "version": "0.0.2",
   "main": "dist/index.js",
   "license": "MIT",
@@ -14,11 +14,12 @@
   },
   "keywords": [
     "fluent",
+    "fixture",
+    "data-fixture",
     "database",
     "db",
     "orm",
-    "seeder",
-    "fixture"
+    "seeder"
   ],
   "directories": {
     "dist": "dist"

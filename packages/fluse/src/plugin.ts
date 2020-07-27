@@ -5,22 +5,33 @@ import { Fixture } from "./fixture";
 import { isDefined, MaybePromise } from "./utils";
 
 export type Executor<T = any, TContext = any> = (
+  /** The fixture being created. */
   fixture: Fixture<T>,
+  /** The context of the executor. */
   context?: TContext
 ) => Promise<T>;
 
+/** A fixture execute middleware. */
 export type ExecutorMiddlewareFn = (
+  /** The fixture being created. */
   fixture: Fixture<any>,
+  /** The next middleware function. */
   next: Executor
 ) => Promise<any>;
 
+/** Definition of a plugin */
 export type PluginFn<TConfig = any> = (
   config?: Partial<TConfig>
 ) => {
+  /** Name of the plugin. */
   name: string;
+  /** Version compatibility of the plugin. */
   version: string;
+  /** Middleware function creating the execute context of the plugin. */
   onCreateExecutor?: () => ExecutorMiddlewareFn;
+  /** Hook called before fixtures are executed. */
   onBefore?: () => MaybePromise<void>;
+  /** Hook called after fixtures are executed. */
   onAfter?: () => MaybePromise<void>;
 };
 
