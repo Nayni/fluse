@@ -15,7 +15,7 @@ module.exports = {
     navbar: {
       title: "Fluse",
       logo: {
-        alt: "My Site Logo",
+        alt: "Fluse Logo",
         src: "img/logo.svg",
       },
       links: [
