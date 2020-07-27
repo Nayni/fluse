@@ -23,7 +23,7 @@
     "dist": "dist"
   },
   "files": [
-    "lib"
+    "dist"
   ],
   "scripts": {
     "clean": "rimraf ./dist",
