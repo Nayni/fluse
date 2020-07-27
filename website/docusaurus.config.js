@@ -2,7 +2,7 @@ module.exports = {
   title: "Fluse",
   tagline: "Build fluent and type-safe fixtures.",
   url: "https://your-docusaurus-test-site.com",
-  baseUrl: "/",
+  baseUrl: "/fluse/",
   favicon: "img/favicon.ico",
   organizationName: "nayni",
   projectName: "fluse",
