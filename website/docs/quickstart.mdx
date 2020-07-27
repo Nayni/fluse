@@ -34,7 +34,7 @@ yarn add -D fluse
 
 </Tabs>
 
-### 2. Define your basic fixtures
+### 2. Define your fixtures
 
 ```typescript
 // src/fixtures/userFixture.ts
@@ -62,7 +62,7 @@ type PostsFixtureArgs = {
   author: User;
 };
 
-const postsFixture = fixture({
+export const postsFixture = fixture({
   async create(ctx, args: PostsFixtureArgs) {
     return Array(10).fill(0).map((_, index) => {
       const post = new Post({
@@ -78,7 +78,6 @@ const postsFixture = fixture({
 ### 3. Combine them together
 
 ```typescript
-// src/seed.ts
 import { combine } from "fluse";
 import { userFixture } from "./fixtures/userFixture";
 import { postFixture } from "./fixtures/postFixture";
@@ -89,7 +88,7 @@ const userWithPostsFixture = combine()
   .toFixture();
 ```
 
-### 4. Use them in your tests
+### 4. Use your fixtures
 
 ```typescript
 import { combine, execute } from "fluse";

@@ -14,7 +14,7 @@ fixture<TResult, TArgs>(config: {
 }) => FixtureFactory<TResult, TArgs>
 ```
 
-- `create` **(required)**: The function used to create the fixture's data set. The function receives a [context]() and optionally some typed [arguments]().
+- `create` **(required)**: The function used to create the fixture's data set. The function receives a [context](./context.md) and optionally some typed [arguments](./supplying-arguments.md).
 
 ## Example
 
@@ -26,7 +26,7 @@ type UserFixtureArgs = {
   username: string;
 };
 
-export const userFixture = fixture({
+const userFixture = fixture({
   async create(ctx, args: UserFixtureArgs) {
     const user = new User({ username: args.username });
     return user;

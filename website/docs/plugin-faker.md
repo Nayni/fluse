@@ -6,6 +6,40 @@ sidebar_label: plugin-faker
 
 A plugin to make Faker availabe on the Fluse context.
 
+## Install
+
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+
+<Tabs
+defaultValue="yarn"
+values={[
+{ label: 'yarn', value: 'yarn', },
+{ label: 'npm', value: 'npm', },
+]
+}>
+
+<TabItem value="npm">
+
+```bash
+npm install fluse-plugin-faker faker --save-dev
+```
+
+</TabItem>
+<TabItem value="yarn">
+
+```bash
+yarn add -D fluse-plugin-faker faker
+```
+
+</TabItem>
+
+</Tabs>
+
+:::tip
+This plugin requires `faker` to be installed as well.
+:::
+
 ## Example
 
 ```typescript

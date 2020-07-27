@@ -4,9 +4,9 @@ title: Combining fixtures
 sidebar_label: Combining fixtures
 ---
 
-The real strength of Fluse lies in the re-usability. Creating a single data fixture is great, but Fluse is built to help with complex data sets.
+The big strength of Fluse lies in its re-usability. Creating a single fixture is great, but Fluse is built to help with complex data sets.
 
-Instead of creating one big monolithic data fixture Fluse allows you to combine multiple smaller fixtures into a bigger one. Allowing you to compose together data sets by re-using smaller parts you've defined before. On top of that Fluse does this in a type-safe way and will provide you with type-safety along the way.
+Instead of creating one big monolithic fixture Fluse allows you to combine multiple smaller fixtures into a bigger one. Allowing you to compose together data sets by re-using smaller parts you've defined before. On top of that Fluse does this in a type-safe way.
 
 ```typescript
 // src/fixtures/userFixture.ts
@@ -36,7 +36,7 @@ type PostsFixtureArgs = {
   author: User;
 };
 
-const postsFixture = fixture({
+export const postsFixture = fixture({
   async create(ctx, args: PostsFixtureArgs) {
     return Array(10)
       .fill(0)
@@ -53,9 +53,9 @@ const postsFixture = fixture({
 
 The above fixture creates 10 posts for a given author, a user.
 
-Until now we have 2 separate fixtures. We could naïvely execute those fixtures in sequence, but with Fluse you can do better!
+Right now we have 2 separate fixtures. We could naïvely execute those fixtures in sequence, but with Fluse you can do better!
 
-We can combine the above two fixtures into a new fixture:
+We can combine the above and use the output from the `userFixture` as input for the `postsFixture`:
 
 ```typescript
 // src/seed.ts
@@ -73,7 +73,7 @@ The above example shows how we've successfully combined both fixtures into a sin
 
 Let's go through this step by step:
 
-- The `combine` function starts a [builder]() that allows you to chain any number of fixtures together and combine them into a single result
+- The `combine` function starts a [builder](./api-combine.md#combinedfixturebuilderand) that allows you to chain any number of fixtures together and combine them into a single result
 - The `and` function allows you to pass any previously defined fixture as an argument, you consume that fixture just like you would when calling `execute`
 - Alternatively the `and` function also allows you to pass in a _factory function_. This factory function will receive any results from all previous fixtures in the chain (by name) and must return a consumed fixture. This way we are able to pass our user `foo` to the `postFixture` and make it the author of all the posts it creates.
 - we end the chain my calling `toFixture()` which will produce a new fixture that is ready to be executed.
@@ -88,4 +88,4 @@ import { postFixture } from "./fixtures/postFixture";
 const { foo, fooPosts } = await execute(userWithPostsFixture);
 ```
 
-Notice how Fluse still provides you with a type-safe result which you can inspect. The names you've chosen in the combined fixture are carried over into the result.
+Notice how Fluse still provides you with a type-safe result which you can inspect and assert. The names you've chosen in the combined fixture are carried over into the result.

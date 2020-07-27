@@ -6,6 +6,40 @@ sidebar_label: plugin-typeorm
 
 A plugin to allow Fluse fixtures to interact with a TypeORM connection.
 
+## Install
+
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+
+<Tabs
+defaultValue="yarn"
+values={[
+{ label: 'yarn', value: 'yarn', },
+{ label: 'npm', value: 'npm', },
+]
+}>
+
+<TabItem value="npm">
+
+```bash
+npm install fluse-plugin-typeorm typeorm --save-dev
+```
+
+</TabItem>
+<TabItem value="yarn">
+
+```bash
+yarn add -D fluse-plugin-typeorm typeorm
+```
+
+</TabItem>
+
+</Tabs>
+
+:::tip
+This plugin requires `typeorm` to be installed as well.
+:::
+
 ## Example
 
 ```typescript
@@ -26,7 +60,7 @@ const result = await execute(fooFixture("foo"), {
 
 ## API Reference
 
-The `typeorm` key will become available on the [context]() as you use this plugin.
+The `typeorm` key will become available on the [context](./context.md) as you use this plugin.
 
 ### Signature
 

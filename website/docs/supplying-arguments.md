@@ -4,7 +4,7 @@ title: Supplying arguments
 sidebar_label: Supplying arguments
 ---
 
-Whenever you define a first you can optionally define arguments for the fixture. By adding arguments to your fixture you allow any consumer to pass in variables that might control the output of the fixture.
+Whenever you define a fixture you can optionally define arguments. By adding arguments to your fixture you can allow consumers to control parts of the output of the fixture.
 
 ```typescript
 import { fixture } from "fluse";
@@ -33,7 +33,7 @@ const result = await execute(userFixture("testUser", { username: "test" }));
 
 Notice how we pass in a username, as defined by our `UserFixtureArgs` type. If you are working in TypeScript Fluse will provide you with type information and in this case even complain if you try to use the fixture without passing in a username.
 
-Supplying arguments can be very useful for controlling certain parts of a fixture, it is also a vital piece to enable you to [combine fixtures]().
+Supplying arguments can be very useful for controlling certain parts of a fixture, it is also a vital piece to enable you to [combine fixtures](./combining-fixtures.md).
 
 :::info
 While arguments can be very useful. We recommend to keep your arguments to a **minimum** to not bloat your fixtures.

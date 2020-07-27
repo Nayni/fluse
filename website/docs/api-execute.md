@@ -4,7 +4,7 @@ title: execute()
 sidebar_label: execute()
 ---
 
-`execute()` allows you to run a particular fixture, this can be a single fixture or a combined fixture. The execute method is used to supply a [shared context object]() into your fixtures as well as allow [plugins]() to hook into the lifecycle of a fixture.
+`execute()` allows you to run any particular fixture, this can be a single fixture or a combined fixture.
 
 ## Signature
 
@@ -17,7 +17,7 @@ execute<TResult>(
 ) => Promise<TResult>;
 ```
 
-- `fixture` **(required)**: The fixture to execute, created by either [fixture()]() or by [combine()]().
+- `fixture` **(required)**: The fixture to execute, created by either [fixture()](./api-fixture.md) or by [combine()](./api-combine.md).
 - `options` **(optional)**: Additional options including:
   - `plugins` **(optional)**: A set of plugins to use while executing.
 
