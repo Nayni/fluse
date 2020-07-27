@@ -1,7 +1,7 @@
 {
   "name": "fluse",
   "description": "A fluent and type-safe fixture builder.",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "main": "dist/index.js",
   "license": "MIT",
   "author": {
