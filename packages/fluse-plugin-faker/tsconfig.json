@@ -17,7 +17,7 @@
     "strict": true,
     "outDir": "dist",
     "pretty": true,
-    "removeComments": true,
+    "removeComments": false,
     "strictNullChecks": true,
     "target": "es6"
   },
