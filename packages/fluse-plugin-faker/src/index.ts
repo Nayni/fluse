@@ -14,7 +14,7 @@ const plugin: PluginFn<{}> = () => {
     name: "faker",
     version: "0.1.x",
     onCreateExecutor() {
-      return (fixture, next) => next(fixture, { faker });
+      return (fixture, next) => next(fixture, faker);
     },
   };
 };
