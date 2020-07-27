@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.1.4](https://github.com/Nayni/fluse/compare/fluse-plugin-faker@0.1.3...fluse-plugin-faker@0.1.4) (2020-07-27)
+
+
+### Bug Fixes
+
+* nested context key ([5b47745](https://github.com/Nayni/fluse/commit/5b477450ce16759e8dd5e3292a66d7a834ed7cfb))
+
+
+
+
+
 ## [0.1.3](https://github.com/Nayni/fluse/compare/fluse-plugin-faker@0.1.2...fluse-plugin-faker@0.1.3) (2020-07-27)
 
 
