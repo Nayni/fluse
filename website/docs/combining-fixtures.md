@@ -74,17 +74,18 @@ The above example shows how we've successfully combined both fixtures into a sin
 Let's go through this step by step:
 
 - The `combine` function starts a [builder](./api-combine.md#combinedfixturebuilderand) that allows you to chain any number of fixtures together and combine them into a single result
-- The `and` function allows you to pass any previously defined fixture as an argument, you consume that fixture just like you would when calling `execute`
+- The `and` function allows you to pass any previously defined fixture as an argument, you consume that fixture just like any other fixture.
 - Alternatively the `and` function also allows you to pass in a _factory function_. This factory function will receive any results from all previous fixtures in the chain (by name) and must return a consumed fixture. This way we are able to pass our user `foo` to the `postFixture` and make it the author of all the posts it creates.
 - we end the chain my calling `toFixture()` which will produce a new fixture that is ready to be executed.
 
 We can now use our new combined fixture to create all the data at once:
 
 ```typescript
-import { execute } from "fluse";
+import { createExecutor } from "fluse";
 import { userFixture } from "./fixtures/userFixture";
 import { postFixture } from "./fixtures/postFixture";
 
+const execute = createExecutor();
 const { foo, fooPosts } = await execute(userWithPostsFixture);
 ```
 

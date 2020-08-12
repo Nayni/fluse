@@ -12,8 +12,12 @@ Every fixture you create with Fluse has the ability to access a context object. 
 Context is Fluse's way of allowing you to plug into the lifecycle of a fixture and access any resources that might need to live outside of your fixture scope such as database connections. It will always be the first argument of a fixture.
 
 ```typescript
-import { fixture, execute } from "fluse";
+import { createExecutor, fixture } from "fluse";
 import fakerPlugin from "fluse-plugin-faker";
+
+const execute = createExecutor({
+  plugins: [fakerPlugin()],
+});
 
 const fooFixture = fixture({
   async create(context) {
@@ -21,7 +25,7 @@ const fooFixture = fixture({
   },
 });
 
-const { foo } = await execute(fooFixture("foo"), { plugins: fakerPlugin() });
+const { foo } = await execute(fooFixture("foo"));
 ```
 
 Have a look at some of our official plugins:

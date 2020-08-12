@@ -107,8 +107,10 @@ Writing the same test now becomes:
 
 ```typescript
 // src/fooService.test.ts
-import { execute } from "fluse";
+import { createExecutor } from "fluse";
 import { activatedUserFixture } from "./fixtures/users";
+
+const execute = createExecutor();
 
 describe("foo", () => {
   it("should return true for an activated user", async () => {

@@ -43,8 +43,12 @@ This plugin requires `typeorm` to be installed as well.
 ## Example
 
 ```typescript
-import { execute, fixture } from "fluse";
+import { createExecutor, fixture } from "fluse";
 import typeormPlugin from "fluse-plugin-typeorm";
+
+const execute = createExecutor({
+  plugins: [typeormPlugin({ connection: "default", transaction: true })],
+});
 
 const fooFixture = fixture({
   async create(ctx) {
@@ -53,9 +57,7 @@ const fooFixture = fixture({
   },
 });
 
-const result = await execute(fooFixture("foo"), {
-  plugins: [typeormPlugin({ connection: "default", transaction: true })],
-});
+const result = await execute(fooFixture("foo"));
 ```
 
 ## API Reference

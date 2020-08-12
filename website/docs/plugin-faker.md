@@ -43,8 +43,12 @@ This plugin requires `faker` to be installed as well.
 ## Example
 
 ```typescript
-import { execute, fixture } from "fluse";
+import { createExecutor, fixture } from "fluse";
 import fakerPlugin from "fluse-plugin-faker";
+
+const execute = createExecutor({
+  plugins: [fakerPlugin()],
+});
 
 const fooFixture = fixture({
   async create(ctx) {
@@ -54,9 +58,7 @@ const fooFixture = fixture({
   },
 });
 
-const result = await execute(fooFixture("foo"), {
-  plugins: [fakerPlugin()],
-});
+const result = await execute(fooFixture("foo"));
 ```
 
 ## API Reference

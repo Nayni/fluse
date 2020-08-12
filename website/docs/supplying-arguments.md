@@ -26,8 +26,9 @@ In the example above we are allowing consumers to pass in a username for the cre
 Whenever the fixture is used now it will require additional arguments to be passed in.
 
 ```typescript
-import { execute } from "fluse";
+import { createExecutor } from "fluse";
 
+const execute = createExecutor();
 const result = await execute(userFixture("testUser", { username: "test" }));
 ```
 

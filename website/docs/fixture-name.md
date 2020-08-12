@@ -9,7 +9,9 @@ Every fixture you create with Fluse will always require you to pass in _at least
 The name argument is used by Fluse to return the data back to you once it has been created.
 
 ```typescript
-import { fixture, execute } from "fluse";
+import { createExecutor, fixture } from "fluse";
+
+const execute = createExecutor();
 
 const fooFixture = fixture({
   async create() {

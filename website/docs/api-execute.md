@@ -1,30 +1,33 @@
 ---
 id: api-execute
-title: execute()
-sidebar_label: execute()
+title: createExecutor()
+sidebar_label: createExecutor()
 ---
 
-`execute()` allows you to run any particular fixture, this can be a single fixture or a combined fixture.
+`createExecutor()` creates an executor which allows you to run any particular fixture, this can be a single fixture or a combined fixture.
 
 ## Signature
 
 ```
-execute<TResult>(
-  fixture: Fixture<TResult>,
-  options?: {
-    plugins?: Plugin[];
-  }
-) => Promise<TResult>;
+createExecutor(options?: {
+  plugins?: Plugin[]
+}) => (fixture: Fixture<TResult>) => Promise<TResult>
 ```
 
-- `fixture` **(required)**: The fixture to execute, created by either [fixture()](./api-fixture.md) or by [combine()](./api-combine.md).
 - `options` **(optional)**: Additional options including:
   - `plugins` **(optional)**: A set of plugins to use while executing.
+- `fixture` **(required)**: The fixture to execute, created by either [fixture()](./api-fixture.md) or by [combine()](./api-combine.md).
 
 ## Example
 
 ```typescript
-import { fixture, execute } from "fluse";
+import { createExecutor, fixture } from "fluse";
+
+const execute = createExecutor({
+  plugins: [
+    /* pass plugins */
+  ],
+});
 
 const fooFixture = fixture({
   async create() {

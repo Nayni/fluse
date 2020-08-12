@@ -91,9 +91,11 @@ const userWithPostsFixture = combine()
 ### 4. Use your fixtures
 
 ```typescript
-import { combine, execute } from "fluse";
+import { createExecutor, combine } from "fluse";
 import { userFixture } from "./fixtures/userFixture";
 import { postFixture } from "./fixtures/postFixture";
+
+const execute = createExecutor();
 
 const userWithPostsFixture = combine()
   .and(userFixture("foo", { username: "foo" }))

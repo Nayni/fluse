@@ -38,7 +38,7 @@ toFixture() => Fixture<TFixtures>;
 ## Example
 
 ```typescript
-import { fixture, combine, execute } from "fluse";
+import { fixture, combine } from "fluse";
 import { User } from "./entities/User";
 import { Post } from "./entities/Post";
 
