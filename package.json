@@ -15,10 +15,10 @@
     "lerna:publish": "lerna publish --conventional-commits --changelog-preset conventionalcommits --create-release github"
   },
   "devDependencies": {
-    "@commitlint/cli": "^8.3.5",
-    "@commitlint/config-conventional": "^8.3.4",
+    "@commitlint/cli": "^9.1.1",
+    "@commitlint/config-conventional": "^9.1.1",
     "husky": "^4.2.5",
-    "lerna": "^3.20.2"
+    "lerna": "^3.22.1"
   },
   "husky": {
     "hooks": {
