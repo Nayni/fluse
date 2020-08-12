@@ -10,16 +10,19 @@
       "**/typeorm"
     ]
   },
-  "husky": {
-    "hooks": {
-      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS",
-      "pre-commit": "lerna run --concurrency 1 --stream precommit --since HEAD --exclude-dependents"
-    }
+  "scripts": {
+    "lerna:bootstrap": "lerna bootstrap"
   },
   "devDependencies": {
     "@commitlint/cli": "^8.3.5",
     "@commitlint/config-conventional": "^8.3.4",
     "husky": "^4.2.5",
     "lerna": "^3.20.2"
+  },
+  "husky": {
+    "hooks": {
+      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS",
+      "pre-commit": "lerna run --concurrency 1 --stream precommit --since HEAD --exclude-dependents"
+    }
   }
 }
