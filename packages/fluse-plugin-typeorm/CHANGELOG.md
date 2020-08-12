@@ -3,6 +3,15 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 0.2.0 (2020-08-12)
+
+* feat: change execute into createExecutor factory ([430755f](https://github.com/Nayni/fluse/commit/430755f))
+* fix: loosen version compatibility ([e384ce9](https://github.com/Nayni/fluse/commit/e384ce9))
+
+
+
+
+
 ## [0.1.3](https://github.com/Nayni/fluse/compare/fluse-plugin-typeorm@0.1.2...fluse-plugin-typeorm@0.1.3) (2020-07-27)
 
 
