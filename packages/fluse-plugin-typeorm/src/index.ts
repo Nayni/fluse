@@ -46,7 +46,7 @@ const plugin: PluginFn<TypeORMPluginConfig> = (config = {}) => {
 
   return {
     name: "typeorm",
-    version: "0.1.x",
+    version: "0.x",
     async onBefore() {
       if (synchronize) {
         const connection = await getOrCreateConnection();

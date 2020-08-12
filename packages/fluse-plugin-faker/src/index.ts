@@ -12,7 +12,7 @@ declare module "fluse" {
 const plugin: PluginFn<{}> = () => {
   return {
     name: "faker",
-    version: "0.1.x",
+    version: "0.x",
     onCreateExecutor() {
       return (fixture, next) => next(fixture, faker);
     },
