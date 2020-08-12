@@ -2,6 +2,6 @@
 export interface FixtureContext {}
 /* eslint-enable @typescript-eslint/no-empty-interface */
 
-export { execute, ExecuteOptions } from "./execute";
+export { createExecutor, CreateExecutorOptions } from "./execute";
 export { combine, CombinedFixtureBuilder, fixture } from "./fixture";
 export { PluginFn } from "./plugin";

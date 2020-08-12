@@ -1,4 +1,4 @@
-import { combine, execute, fixture } from "fluse";
+import { combine, createExecutor, fixture } from "fluse";
 import "reflect-metadata";
 import { createConnection } from "typeorm";
 import typeormPlugin from "../src";
@@ -38,14 +38,16 @@ const postFixture = fixture({
 });
 
 async function run() {
+  const execute = createExecutor({
+    plugins: [typeormPlugin({ connection: "default", transaction: true })],
+  });
+
   const userWithPosts = combine()
     .and(userFixture("foo", { username: "foo" }))
     .and(({ foo }) => postFixture("fooPosts", { author: foo }))
     .toFixture();
 
-  const result = await execute(userWithPosts, {
-    plugins: [typeormPlugin({ connection: "default", transaction: true })],
-  });
+  const result = await execute(userWithPosts);
   console.log(result);
 }
 

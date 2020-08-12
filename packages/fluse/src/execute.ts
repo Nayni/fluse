@@ -11,7 +11,7 @@ import {
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const packageJson = require("../package.json");
 
-export type ExecuteOptions = {
+export type CreateExecutorOptions = {
   plugins?: Plugin[];
 };
 
@@ -40,43 +40,36 @@ function validatePlugins(plugins: Plugin[]) {
   });
 }
 
-function createExecutor<TResult>(plugins: Plugin[]) {
-  const executor = composePluginExecutorMiddlewares<TResult>(
-    plugins,
-    (fixture, context) => fixture.create(context)
-  );
-
-  return executor;
-}
-
 /**
- * Executes a given fixture.
+ * Creates a fixture executor.
+ * The executor allows you to run any fixture created by 'fixture' or 'combine'.
  *
- * @param fixture The fixture to execute, can be a single fixture or a combined fixture.
- * @param options Additional options to use during execution. Primarily used to define any plugins to include at runtime.
+ * @param options Additional options to use during execution.
  */
-export async function execute<TResult>(
-  fixture: Fixture<TResult>,
-  options?: ExecuteOptions
-) {
-  if (!isFixture(fixture)) {
-    throw new Error(
-      "The provided fixture is not valid." +
-        "\n\nA valid fixture should be created by 'fixture()' or 'combine()'"
-    );
-  }
-
-  const rootContext = {};
+export function createExecutor(options?: CreateExecutorOptions) {
   const plugins = options?.plugins ?? [];
 
   validatePlugins(plugins);
 
-  const beforeHooks = composePluginBeforeHooks(plugins);
-  const afterHooks = composePluginAfterHooks(plugins);
-  const executor = createExecutor<TResult>(plugins);
+  return async function execute<TResult>(fixture: Fixture<TResult>) {
+    if (!isFixture(fixture)) {
+      throw new Error(
+        "The provided fixture is not valid." +
+          "\n\nA valid fixture should be created by 'fixture()' or 'combine()'"
+      );
+    }
 
-  await beforeHooks();
-  const result = await executor(fixture, rootContext);
-  await afterHooks();
-  return result;
+    const rootContext = {};
+    const beforeHooks = composePluginBeforeHooks(plugins);
+    const afterHooks = composePluginAfterHooks(plugins);
+    const executor = composePluginExecutorMiddlewares<TResult>(
+      plugins,
+      (fixture, context) => fixture.create(context)
+    );
+
+    await beforeHooks();
+    const result = await executor(fixture, rootContext);
+    await afterHooks();
+    return result;
+  };
 }
