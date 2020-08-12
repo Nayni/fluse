@@ -1126,6 +1126,13 @@
   dependencies:
     "@types/node" "*"
 
+"@types/slonik@^22.1.3":
+  version "22.1.3"
+  resolved "https://registry.yarnpkg.com/@types/slonik/-/slonik-22.1.3.tgz#afd0fade2fc48c33d832c9a8e06458706ca571dc"
+  integrity sha512-QXyaVuRlyeToaXtEJKv2JcdM/U74OqsBb9eWysJFsEtkZIhvcDSK1GldS83Ke8cf9Ol5kdlTvRHwuY4fWR0akQ==
+  dependencies:
+    "@types/node" "*"
+
 "@types/strip-bom@^3.0.0":
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/@types/strip-bom/-/strip-bom-3.0.0.tgz#14a8ec3956c2e81edb7520790aecf21c290aebd2"
