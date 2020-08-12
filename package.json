@@ -11,7 +11,8 @@
     ]
   },
   "scripts": {
-    "lerna:bootstrap": "lerna bootstrap"
+    "lerna:bootstrap": "lerna bootstrap",
+    "lerna:publish": "lerna publish --conventional-commits --changelog-preset conventionalcommits --create-release github"
   },
   "devDependencies": {
     "@commitlint/cli": "^8.3.5",
