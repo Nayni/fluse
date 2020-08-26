@@ -4,18 +4,23 @@ import _ from "lodash";
 import { FixtureContext } from ".";
 import { MaybePromise, StrictlyRecord } from "./utils";
 
+type FixtureCreateListConfig = {
+  index: number;
+};
+
 /**
  * Defines the function signature of the fixture's create method.
  */
 type FixtureCreateFn<TResult, TArgs> = (
   context: FixtureContext,
-  args: TArgs
+  args: TArgs,
+  list: FixtureCreateListConfig
 ) => MaybePromise<TResult>;
 
 /**
  * A fixture's configuration.
  */
-type FixtureOptions<TResult, TArgs> = {
+type FixtureConfig<TResult, TArgs> = {
   /**
    * The create method of a fixture.
    * This function will be called internally by 'execute()' to create the desired data.
@@ -23,6 +28,14 @@ type FixtureOptions<TResult, TArgs> = {
   create: FixtureCreateFn<TResult, TArgs>;
 };
 
+type FixtureOptions<TName extends string> = {
+  name: TName;
+  list?: number | false;
+};
+
+type FixtureOptionsHasList<T> = T extends { list: number } ? true : false;
+
+type NameOrFixtureOptions<TName extends string> = TName | FixtureOptions<TName>;
 /**
  * Defines a fixture created by the 'fixture()' api.
  */
@@ -41,34 +54,88 @@ type FixtureResult<TName extends string, TResult> = { [K in TName]: TResult };
 
 type FixtureFactoryWithoutArgs<TResult> = TResult extends void
   ? () => Fixture<{}>
-  : <TName extends string>(
-      name: TName
-    ) => Fixture<FixtureResult<TName, TResult>>;
+  : <TName extends string, TOptions extends NameOrFixtureOptions<TName>>(
+      nameOrOptions: TOptions
+    ) => Fixture<
+      FixtureResult<
+        TName,
+        FixtureOptionsHasList<TOptions> extends true ? TResult[] : TResult
+      >
+    >;
 
 type FixtureFactoryWithArgs<TResult, TArgs> = TResult extends void
   ? (args: TArgs) => Fixture<{}>
-  : <TName extends string>(
-      name: TName,
+  : <TName extends string, TOptions extends NameOrFixtureOptions<TName>>(
+      nameOrOptions: TOptions,
       args: TArgs
-    ) => Fixture<FixtureResult<TName, TResult>>;
+    ) => Fixture<
+      FixtureResult<
+        TName,
+        FixtureOptionsHasList<TOptions> extends true ? TResult[] : TResult
+      >
+    >;
 
 type FixtureFactory<TResult, TArgs> = TArgs extends false
   ? FixtureFactoryWithoutArgs<TResult>
   : FixtureFactoryWithArgs<TResult, TArgs>;
+
+function isFixtureOptions(value: unknown): value is FixtureOptions<string> {
+  return _.isObject(value) && value.hasOwnProperty("name");
+}
 
 /**
  * Defines a fixture usable by 'execute()' and 'combine()'.
  * @param config The fixture configuration.
  */
 export function fixture<TResult, TArgs = false>(
-  config: FixtureOptions<TResult, TArgs>
+  config: FixtureConfig<TResult, TArgs>
 ): FixtureFactory<TResult, TArgs> {
-  return function fixtureFactory<TName extends string>(
-    name: TName,
-    args: TArgs
-  ) {
+  return function fixtureFactory<
+    TName extends string,
+    TOptions extends NameOrFixtureOptions<TName>
+  >(nameOrOptions: TOptions, args: TArgs) {
+    const name = isFixtureOptions(nameOrOptions)
+      ? nameOrOptions.name
+      : _.isString(nameOrOptions)
+      ? nameOrOptions
+      : undefined;
+
+    if (_.isNil(name)) {
+      throw new Error(
+        "An error occured trying to consume a fixture: " +
+          "A fixture must have a name, make sure you've specified a name as the first argument."
+      );
+    }
+
+    const list = isFixtureOptions(nameOrOptions)
+      ? typeof nameOrOptions.list === "number"
+        ? nameOrOptions.list
+        : undefined
+      : undefined;
+
+    if (!_.isNil(list)) {
+      if (list <= 0) {
+        throw new Error(
+          "An error occured trying to consume a fixture: " +
+            "The list option must be a number greater than 0 or 'false'."
+        );
+      }
+    }
+
     const create = async (context: FixtureContext) => {
-      const result = await Promise.resolve(config.create(context, args));
+      let result: TResult | TResult[];
+
+      if (list) {
+        result = await Promise.all(
+          Array(list)
+            .fill(0)
+            .map((__, index) => config.create(context, args, { index }))
+        );
+      } else {
+        result = await Promise.resolve(
+          config.create(context, args, { index: 0 })
+        );
+      }
 
       return {
         [name]: result,
