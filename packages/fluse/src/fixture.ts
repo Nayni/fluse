@@ -4,7 +4,7 @@ import _ from "lodash";
 import { FixtureContext } from ".";
 import { MaybePromise, StrictlyRecord } from "./utils";
 
-type FixtureCreateListConfig = {
+export type FixtureCreateListConfig = {
   index: number;
   size: number;
 };
