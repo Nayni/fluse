@@ -57,22 +57,23 @@ type PostsFixtureArgs = {
   author: User;
 };
 
-const postsFixture = fixture({
-  async create(ctx, args: PostsFixtureArgs) {
-    return Array(10)
-      .fill(0)
-      .map((_, index) => {
-        const post = new Post({
-          title: `post ${index}`,
-          author: args.author,
-        });
-        return post;
-      });
-  },
+const postFixture = fixture({
+  async create(ctx, args: PostsFixtureArgs, { index }) {
+    const post = new Post({
+      title: `post ${index}`,
+      author: args.author,
+    });
+    return post;
 });
 
-const userWithPostsFixture = combine()
+const fooWithPosts = combine()
   .and(userFixture("foo", { username: "foo" }))
-  .and(({ foo }) => postFixture("fooPosts", { author: foo }))
+  .and(({ foo }) => postFixture({ name: "fooPosts", list: 10 }, { author: foo }))
   .toFixture();
+
+const execute = createExecutor();
+const result = await execute(fooWithPosts);
+
+result.foo // User
+result.fooPosts // Post[]
 ```

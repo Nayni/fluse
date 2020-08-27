@@ -134,5 +134,6 @@ You might have noticed the `"userBob"` as a first argument to `activatedUserFixt
 Find out more about what you can do with fixtures such as:
 
 - [Supplying arguments](./supplying-arguments.md)
+- [Making lists](./making-lists.md)
 - [Accessing context](./context.md)
 - [Combining fixtures](./combining-fixtures.md)

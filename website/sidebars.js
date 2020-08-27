@@ -11,6 +11,7 @@ module.exports = {
       items: [
         "fixture-name",
         "supplying-arguments",
+        "making-lists",
         "combining-fixtures",
         "context",
       ],

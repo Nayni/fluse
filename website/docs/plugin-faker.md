@@ -22,14 +22,14 @@ values={[
 <TabItem value="npm">
 
 ```bash
-npm install fluse-plugin-faker faker --save-dev
+npm install fluse-plugin-faker faker @types/faker --save-dev
 ```
 
 </TabItem>
 <TabItem value="yarn">
 
 ```bash
-yarn add -D fluse-plugin-faker faker
+yarn add -D fluse-plugin-faker faker @types/faker
 ```
 
 </TabItem>

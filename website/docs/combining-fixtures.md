@@ -25,7 +25,7 @@ export const userFixture = fixture({
 });
 ```
 
-Above is our first fixture. It creates a user with a given username. However in the system we are building users can make posts, thus we also have a posts fixture:
+Above is our first fixture. It creates a user with a given username. However in the system we are building users can make posts, thus we also have a post fixture:
 
 ```typescript
 // src/fixtures/postFixture.ts
@@ -36,26 +36,22 @@ type PostsFixtureArgs = {
   author: User;
 };
 
-export const postsFixture = fixture({
-  async create(ctx, args: PostsFixtureArgs) {
-    return Array(10)
-      .fill(0)
-      .map((_, index) => {
-        const post = new Post({
-          title: `post ${index}`,
-          author: args.author,
-        });
-        return post;
-      });
+export const postFixture = fixture({
+  async create(ctx, args: PostsFixtureArgs, { index }) {
+    const post = new Post({
+      title: `post ${index}`,
+      author: args.author,
+    });
+    return post;
   },
 });
 ```
 
-The above fixture creates 10 posts for a given author, a user.
+The above fixture create a post for a given author, a user. It also uses some additional [list options](./making-lists.md) which will be useful for when we make many posts at the same time.
 
 Right now we have 2 separate fixtures. We could naïvely execute those fixtures in sequence, but with Fluse you can do better!
 
-We can combine the above and use the output from the `userFixture` as input for the `postsFixture`:
+We can combine the above and use the output from the `userFixture` as input for the `postFixture`, on top of that we can let Fluse create many posts by configuring the postFixture as a list:
 
 ```typescript
 // src/seed.ts
@@ -65,7 +61,9 @@ import { postFixture } from "./fixtures/postFixture";
 
 const userWithPostsFixture = combine()
   .and(userFixture("foo", { username: "foo" }))
-  .and(({ foo }) => postFixture("fooPosts", { author: foo }))
+  .and(({ foo }) =>
+    postFixture({ name: "fooPosts", list: 10 }, { author: foo })
+  )
   .toFixture();
 ```
 
