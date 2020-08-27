@@ -9,7 +9,7 @@ declare module "fluse" {
   }
 }
 
-const plugin: PluginFn<{}> = () => {
+const plugin: PluginFn<unknown> = () => {
   return {
     name: "faker",
     version: "0.x",

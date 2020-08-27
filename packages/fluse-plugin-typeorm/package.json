@@ -39,22 +39,22 @@
     "prepublishOnly": "yarn build"
   },
   "devDependencies": {
-    "@typescript-eslint/eslint-plugin": "2.30.0",
-    "@typescript-eslint/parser": "2.30.0",
-    "eslint": "6.8.0",
-    "eslint-config-fluse": "^1.0.1",
-    "fluse-prettier-config": "^1.0.1",
-    "lint-staged": "10.2.2",
-    "prettier": "2.0.5",
-    "reflect-metadata": "^0.1.13",
-    "rimraf": "^3.0.2",
-    "sqlite3": "^4.2.0",
-    "ts-node-dev": "^1.0.0-pre.44",
-    "typeorm": "^0.2.25",
-    "typescript": "3.8.3"
+    "@typescript-eslint/eslint-plugin": "3.10.1",
+    "@typescript-eslint/parser": "3.10.1",
+    "eslint": "7.7.0",
+    "eslint-config-fluse": "1.0.1",
+    "fluse-prettier-config": "1.0.1",
+    "lint-staged": "10.2.13",
+    "prettier": "2.1.1",
+    "reflect-metadata": "0.1.13",
+    "rimraf": "3.0.2",
+    "sqlite3": "5.0.0",
+    "ts-node-dev": "1.0.0-pre.61",
+    "typeorm": "0.2.25",
+    "typescript": "4.0.2"
   },
   "peerDependencies": {
-    "fluse": "^0.0.1",
+    "fluse": "^0.2.0",
     "typeorm": "^0.2.25"
   },
   "lint-staged": {

@@ -53,7 +53,7 @@ type FixtureFn<TResult, TFixtures> = (fixtures: TFixtures) => Fixture<TResult>;
 type FixtureResult<TName extends string, TResult> = { [K in TName]: TResult };
 
 type FixtureFactoryWithoutArgs<TResult> = TResult extends void
-  ? () => Fixture<{}>
+  ? () => Fixture<void>
   : <TName extends string, TOptions extends NameOrFixtureOptions<TName>>(
       nameOrOptions: TOptions
     ) => Fixture<
@@ -64,7 +64,7 @@ type FixtureFactoryWithoutArgs<TResult> = TResult extends void
     >;
 
 type FixtureFactoryWithArgs<TResult, TArgs> = TResult extends void
-  ? (args: TArgs) => Fixture<{}>
+  ? (args: TArgs) => Fixture<void>
   : <TName extends string, TOptions extends NameOrFixtureOptions<TName>>(
       nameOrOptions: TOptions,
       args: TArgs
@@ -160,6 +160,7 @@ export function isFixture(value: any): value is Fixture<any> {
 /**
  * Builder API to create a combined fixture using multiple single fixtures.
  */
+// eslint-disable-next-line @typescript-eslint/ban-types
 export class CombinedFixtureBuilder<TFixtures extends {} = {}> {
   constructor(private fixtureFns: FixtureFn<any, any>[] = []) {}
 
