@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 0.3.0 (2020-08-27)
+
+* test: add unit tests ([716db57](https://github.com/Nayni/fluse/commit/716db57))
+* refactor: improve lists ([3d38c15](https://github.com/Nayni/fluse/commit/3d38c15))
+* chore: dependency upgrades ([e18e053](https://github.com/Nayni/fluse/commit/e18e053))
+* feat: add built in support for lists ([073165e](https://github.com/Nayni/fluse/commit/073165e))
+
+
+
+
+
 ## 0.2.0 (2020-08-12)
 
 * feat: change execute into createExecutor factory ([430755f](https://github.com/Nayni/fluse/commit/430755f))

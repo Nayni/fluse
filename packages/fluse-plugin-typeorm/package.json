@@ -1,7 +1,7 @@
 {
   "name": "fluse-plugin-typeorm",
   "description": "Official TypeORM plugin for fluse.",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "main": "dist/index.js",
   "license": "MIT",
   "author": {
@@ -42,7 +42,7 @@
     "@typescript-eslint/eslint-plugin": "3.10.1",
     "@typescript-eslint/parser": "3.10.1",
     "eslint": "7.7.0",
-    "eslint-config-fluse": "1.0.1",
+    "eslint-config-fluse": "^1.0.2",
     "fluse-prettier-config": "1.0.1",
     "lint-staged": "10.2.13",
     "prettier": "2.1.1",

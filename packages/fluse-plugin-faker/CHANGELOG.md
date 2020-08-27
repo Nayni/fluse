@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## <small>0.1.6 (2020-08-27)</small>
+
+* chore: dependency upgrades ([e18e053](https://github.com/Nayni/fluse/commit/e18e053))
+
+
+
+
+
 ## <small>0.1.5 (2020-08-12)</small>
 
 * fix: loosen version compatibility ([e384ce9](https://github.com/Nayni/fluse/commit/e384ce9))

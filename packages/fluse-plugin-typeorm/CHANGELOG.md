@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## <small>0.2.1 (2020-08-27)</small>
+
+* chore: dependency upgrades ([e18e053](https://github.com/Nayni/fluse/commit/e18e053))
+
+
+
+
+
 ## 0.2.0 (2020-08-12)
 
 * feat: change execute into createExecutor factory ([430755f](https://github.com/Nayni/fluse/commit/430755f))
