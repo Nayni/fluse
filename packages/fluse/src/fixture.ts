@@ -6,6 +6,7 @@ import { MaybePromise, StrictlyRecord } from "./utils";
 
 type FixtureCreateListConfig = {
   index: number;
+  size: number;
 };
 
 /**
@@ -123,22 +124,16 @@ export function fixture<TResult, TArgs = false>(
     }
 
     const create = async (context: FixtureContext) => {
-      let result: TResult | TResult[];
-
-      if (list) {
-        result = await Promise.all(
-          Array(list)
-            .fill(0)
-            .map((__, index) => config.create(context, args, { index }))
-        );
-      } else {
-        result = await Promise.resolve(
-          config.create(context, args, { index: 0 })
-        );
-      }
+      const results = await Promise.all(
+        Array(list || 1)
+          .fill(0)
+          .map((__, index) =>
+            config.create(context, args, { index, size: list || 1 })
+          )
+      );
 
       return {
-        [name]: result,
+        [name]: list ? results : results[0],
       };
     };
 
