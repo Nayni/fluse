@@ -1,7 +1,7 @@
 module.exports = {
   title: "Fluse",
-  tagline: "Build fluent and type-safe fixtures.",
-  url: "https://your-docusaurus-test-site.com",
+  tagline: "Build composable and type-safe fixtures.",
+  url: "https://nayni.github.io/fluse",
   baseUrl: "/fluse/",
   favicon: "img/favicon.ico",
   organizationName: "nayni",

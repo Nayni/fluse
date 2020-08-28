@@ -1,6 +1,6 @@
 {
   "name": "fluse",
-  "description": "A fluent and type-safe fixture builder.",
+  "description": "A composable and type-safe fixture builder.",
   "version": "0.3.0",
   "main": "dist/index.js",
   "license": "MIT",
@@ -13,7 +13,7 @@
     "url": "https://github.com/Nayni/fluse.git"
   },
   "keywords": [
-    "fluent",
+    "composable",
     "fixture",
     "data-fixture",
     "database",

@@ -1,15 +1,15 @@
 <p align="center">
   <a href="https://nayni.github.io/fluse">
-    <img alt="fluse logo" src="./website/static/img/logo.svg" width="80" />
+    <img alt="fluse logo" src="https://nayni.github.io/fluse/img/logo.svg" width="80" />
   </a>
 </p>
 <h1 align="center">
   Fluse
 </h1>
 
-> Fluse is still **under development**. API's are still **subject to change**.
+> Fluse is still **under development**. The final API's are being shaped, and we are approaching a 1.0 release soon.
 
-A fluent and extensible fixture builder.
+A composable and extensible fixture builder.
 
 # Docs
 
@@ -17,4 +17,4 @@ Visit [the official documentation](https://nayni.github.io/fluse) to get started
 
 # License
 
-[MIT](./LICENSE)
+MIT

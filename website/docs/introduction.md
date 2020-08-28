@@ -5,7 +5,7 @@ sidebar_label: Introduction
 slug: /
 ---
 
-Fluse is a **fixture builder**. It enables you to build up fixtures in a **fluent** and **type-safe** way.
+Fluse is a **fixture builder**. It enables you to build up fixtures in a **composable** and **type-safe** way.
 
 ## Why Fluse?
 
