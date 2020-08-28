@@ -7,6 +7,10 @@
   Fluse
 </h1>
 
+<p align="center">
+  <img alt="fluse ci badge" src="https://github.com/nayni/fluse/workflows/ci/badge.svg" />
+</p>
+
 > Fluse is still **under development**. The final API's are being shaped, and we are approaching a 1.0 release soon.
 
 A composable and extensible fixture builder.

@@ -1,0 +1,42 @@
+name: ci
+
+on:
+  push:
+    paths-ignore:
+      - "website/**"
+    branches:
+      - master
+  pull_request:
+    paths-ignore:
+      - "website/**"
+    branches:
+      - master
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions/cache@v2
+        with:
+          path: "**/node_modules"
+          key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
+      - name: install deps
+        run: yarn install
+      - name: lint
+        run: yarn lint
+      - name: test
+        run: yarn test
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions/cache@v2
+        with:
+          path: "**/node_modules"
+          key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
+      - name: install deps
+        run: yarn install
+      - name: build
+        run: yarn build
