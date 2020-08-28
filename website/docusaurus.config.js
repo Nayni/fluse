@@ -18,7 +18,7 @@ module.exports = {
         alt: "Fluse Logo",
         src: "img/logo.svg",
       },
-      links: [
+      items: [
         {
           to: "docs/",
           activeBasePath: "docs",
@@ -75,7 +75,6 @@ module.exports = {
       "@docusaurus/preset-classic",
       {
         docs: {
-          homePageId: "introduction",
           sidebarPath: require.resolve("./sidebars.js"),
           editUrl: "https://github.com/Nayni/fluse/edit/master/website/",
         },

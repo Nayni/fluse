@@ -8,11 +8,11 @@ import styles from "./styles.module.css";
 
 const features = [
   {
-    title: <>Fluent</>,
+    title: <>Composable</>,
     description: (
       <>
         Fluse let's you build small fixtures and you combine them together using
-        a fluent builder API.
+        a builder API.
       </>
     ),
   },

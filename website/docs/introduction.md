@@ -2,6 +2,7 @@
 id: introduction
 title: Introduction
 sidebar_label: Introduction
+slug: /
 ---
 
 Fluse is a **fixture builder**. It enables you to build up fixtures in a **fluent** and **type-safe** way.

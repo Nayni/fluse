@@ -63,7 +63,7 @@ const result = await execute(fooFixture("foo"));
 
 ## API Reference
 
-The `faker` key will become available on the [context]() as you use this plugin.
+The `faker` key will become available on the [context](./context.md) as you use this plugin.
 
 ### Signature
 
