@@ -12,9 +12,8 @@ import { Post } from "./entities/Post";
 
 const postFixture = fixture({
   async create(ctx, args, { index }) {
-    const post = new User();
-    post.title = `title-${index}`;
-    return user;
+    const post = new Post({ title: `title-${index}` });
+    return post;
   },
 });
 ```
@@ -35,10 +34,9 @@ import { fixture } from "fluse";
 import { Post } from "./entities/Post";
 
 const postFixture = fixture({
-  async create(ctx, args, { index }) {
-    const post = new User();
-    post.title = `title-${index}`;
-    return user;
+  create(ctx, args, { index }) {
+    const post = new Post({ title: `title-${index}` });
+    return post;
   },
 });
 

@@ -47,18 +47,18 @@ type UserFixtureArgs = {
 };
 
 const userFixture = fixture({
-  async create(ctx, args: UserFixtureArgs) {
+  create(ctx, args: UserFixtureArgs) {
     const user = new User({ username: args.username });
     return user;
   },
 });
 
-type PostsFixtureArgs = {
+type PostFixtureArgs = {
   author: User;
 };
 
 const postFixture = fixture({
-  async create(ctx, args: PostsFixtureArgs, { index }) {
+  create(ctx, args: PostFixtureArgs, { index }) {
     const post = new Post({
       title: `post ${index}`,
       author: args.author,

@@ -91,7 +91,7 @@ type Args = {
 };
 
 export const activatedUserFixture = fixture({
-  async create(ctx, args: Args) {
+  create(ctx, args: Args) {
     const user = new User({ username: args.username });
     user.performBackgroundCheck();
     user.validateVerificationCode("abc");

@@ -14,7 +14,7 @@ import { createExecutor, fixture } from "fluse";
 const execute = createExecutor();
 
 const fooFixture = fixture({
-  async create() {
+  create() {
     return new Foo();
   },
 });

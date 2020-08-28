@@ -18,7 +18,7 @@ type UserFixtureArgs = {
 };
 
 export const userFixture = fixture({
-  async create(ctx, args: UserFixtureArgs) {
+  create(ctx, args: UserFixtureArgs) {
     const user = new User({ username: args.username });
     return user;
   },
@@ -32,12 +32,12 @@ Above is our first fixture. It creates a user with a given username. However in 
 import { fixture } from "fluse";
 import { Post } from "./entities/Post";
 
-type PostsFixtureArgs = {
+type PostFixtureArgs = {
   author: User;
 };
 
 export const postFixture = fixture({
-  async create(ctx, args: PostsFixtureArgs, { index }) {
+  create(ctx, args: PostFixtureArgs, { index }) {
     const post = new Post({
       title: `post ${index}`,
       author: args.author,

@@ -14,7 +14,7 @@ type UserFixtureArgs = {
 };
 
 export const userFixture = fixture({
-  async create(ctx, args: UserFixtureArgs) {
+  create(ctx, args: UserFixtureArgs) {
     const user = new User({ username: args.username });
     return user;
   },

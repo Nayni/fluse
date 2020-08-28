@@ -20,7 +20,7 @@ const execute = createExecutor({
 });
 
 const fooFixture = fixture({
-  async create(context) {
+  create(context) {
     return new Foo(context.faker.lorem.words(5));
   },
 });

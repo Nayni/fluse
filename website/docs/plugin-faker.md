@@ -51,7 +51,7 @@ const execute = createExecutor({
 });
 
 const fooFixture = fixture({
-  async create(ctx) {
+  create(ctx) {
     const foo = new Foo();
     foo.bar = ctx.faker.lorem.words(5);
     return foo;

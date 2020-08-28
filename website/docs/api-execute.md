@@ -30,7 +30,7 @@ const execute = createExecutor({
 });
 
 const fooFixture = fixture({
-  async create() {
+  create() {
     return new Foo();
   },
 });
