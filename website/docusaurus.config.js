@@ -6,6 +6,7 @@ module.exports = {
   favicon: "img/favicon.ico",
   organizationName: "nayni",
   projectName: "fluse",
+  onBrokenLinks: "ignore",
   themeConfig: {
     sidebarCollapsible: false,
     prism: {
