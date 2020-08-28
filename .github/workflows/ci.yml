@@ -26,7 +26,13 @@ jobs:
       - name: lint
         run: yarn lint
       - name: test
-        run: yarn test
+        run: yarn test:ci
+      - name: codecov
+        uses: codecov/codecov-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          directory: ./packages/fluse/coverage
+          fail_ci_if_error: true
 
   build:
     runs-on: ubuntu-latest

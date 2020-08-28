@@ -31,6 +31,7 @@
     "clean": "rimraf ./dist",
     "lint": "eslint . --ext .ts",
     "test": "jest",
+    "test:ci": "jest --ci --collect-coverage --verbose",
     "compile": "tsc",
     "build": "yarn clean && yarn compile",
     "precommit": "lint-staged",

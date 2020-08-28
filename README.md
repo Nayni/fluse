@@ -9,6 +9,9 @@
 
 <p align="center">
   <img alt="fluse ci badge" src="https://github.com/nayni/fluse/workflows/ci/badge.svg" />
+  <a href="https://codecov.io/gh/Nayni/fluse">
+  <img src="https://codecov.io/gh/Nayni/fluse/branch/master/graph/badge.svg" />
+</a>
 </p>
 
 > Fluse is still **under development**. The final API's are being shaped, and we are approaching a 1.0 release soon.

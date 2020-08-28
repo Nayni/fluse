@@ -1,0 +1,12 @@
+comment:
+  layout: "diff"
+
+coverage:
+  precision: 2
+  round: down
+  status:
+    project:
+      default:
+        target: 95%
+        threshold: 5%
+    patch: off
