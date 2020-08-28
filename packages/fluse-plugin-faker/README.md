@@ -1,5 +1,5 @@
-# fluse-plugin-typeorm
+# fluse-plugin-faker
 
-The official `typeorm` plugin for Fluse.
+The official `faker` plugin for Fluse.
 
 Visit [the official documentation](https://nayni.github.io/fluse).
