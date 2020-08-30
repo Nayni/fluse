@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## <small>0.3.1 (2020-08-30)</small>
+
+* docs: improve docs (#5) ([1cdc851](https://github.com/Nayni/fluse/commit/1cdc851)), closes [#5](https://github.com/Nayni/fluse/issues/5)
+* ci: add codecov ([6924707](https://github.com/Nayni/fluse/commit/6924707))
+* chore: replace fluent with composable in tagline ([04e6b11](https://github.com/Nayni/fluse/commit/04e6b11))
+
+
+
+
+
 ## 0.3.0 (2020-08-27)
 
 * test: add unit tests ([716db57](https://github.com/Nayni/fluse/commit/716db57))

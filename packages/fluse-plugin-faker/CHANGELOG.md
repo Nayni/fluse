@@ -3,6 +3,15 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## <small>0.1.7 (2020-08-30)</small>
+
+* docs: improve docs (#5) ([1cdc851](https://github.com/Nayni/fluse/commit/1cdc851)), closes [#5](https://github.com/Nayni/fluse/issues/5)
+* chore: replace fluent with composable in tagline ([04e6b11](https://github.com/Nayni/fluse/commit/04e6b11))
+
+
+
+
+
 ## <small>0.1.6 (2020-08-27)</small>
 
 * chore: dependency upgrades ([e18e053](https://github.com/Nayni/fluse/commit/e18e053))
