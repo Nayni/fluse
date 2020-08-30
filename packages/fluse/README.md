@@ -49,8 +49,12 @@ import { fixture } from "fluse";
 import { User } from "./entities/User";
 import { Post } from "./entities/Post";
 
+type UserFixtureArgs = {
+  username: string;
+};
+
 export const userFixture = fixture({
-  create() {
+  create(ctx, args: UserFixtureArgs) {
     const user = new User({ username: args.username });
     return user;
   },
