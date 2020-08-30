@@ -98,7 +98,12 @@ it("should find the most popular post", async () => {
 });
 ```
 
-Find out what more you can do with Fluse by checking out our [official documentation](https://nayni.github.io/fluse).
+Find out more of the core concepts of Fluse like:
+
+- [Supplying arguments](https://nayni.github.io/fluse/docs/supplying-arguments)
+- [Making lists](https://nayni.github.io/fluse/docs/making-lists)
+- [Accessing context and plugins](https://nayni.github.io/fluse/docs/context)
+- [Combining fixtures](https://nayni.github.io/fluse/docs/combining-fixtures)
 
 ## Documentation
 
