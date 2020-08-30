@@ -5,33 +5,24 @@ sidebar_label: Introduction
 slug: /
 ---
 
-Fluse is a **fixture builder**. It enables you to build up fixtures in a **composable** and **type-safe** way.
+Fluse is a fixture builder. It allows you to build up fixtures in a composable and type-safe way.
 
 ## Why Fluse?
 
-Testing requires input data, as applications grow in complexity providing that input data becomes more and more complex for several reasons:
+Testing your application or business logic requires input data, as applications grow in complexity providing that input data becomes more and more challenging:
 
-- data in the system become interconnected
-- getting an data into a specific state for testing requires a (large) series of steps
-- data might have to be seeded into a database because you are integration testing or tightly coupled to a database
+- entities become interconnected
+- getting an entity into a specific state for testing requires a (large) series of steps or other data to be created
+- your logic might be tightly coupled to a database or ORM solution requiring you to persist it first
 
-Maintaining a healthy set of data fixtures for medium to large projects can be challenging. It requires a bunch of code just to create data. However this code isn't really part of the application, it's primary goal is to facilitate testing.
+When trying to maintain this type of code there tends to be two common approaches:
 
-Popular ORM's today usually come with a solution to seed data into your database. These solutions however start to fall short when you start using them intensivly because:
-
-- they are tied to the ORM solution and don't really work without a database
-- they are usually implemented in the form of migrations and are not re-usable, type-safe and are hard to consume in test environments
+- write a lot of custom code to create fixtures, writing this code is tedious and maintaining it is even worse
+- try to leverage the built-in ORM's solution of seeding the database. This solution usually boils down to abusing the migrations system and starts to fall short when you intensively use this data in your tests
 
 Fluse is a tool specifically designed to help you in making **re-usable** and **type-safe** data fixtures. It allows you to define **small** and **composable** building blocks for creating test data.
 
-Fluse doesn't tie itself to any ORM solution and works perfectly without any database.
-
-## What is Fluse?
-
-Fluse consists of the following parts:
-
-- `fluse`: The core providing you with building blocks to compose your data fixtures and execute them.
-- `fluse-plugins`: A set of extensions to Fluse allowing you to connect Fluse to your favorite library, take a look at our [official plugins](./plugin-typeorm.md)!
+Fluse's sole focus is to help you create test data and doesn't tie itself to any ORM or database solution. You can however still connect Fluse to your ORM or database of choice by using one of our [official plugins](./context.md).
 
 ## What is a fixture?
 
@@ -39,98 +30,211 @@ A fixture is a function that knows how to create a certain type of data within y
 
 This might sound a little vague so let's give you an example!
 
-If you are building an application that interacts with users you will have some type of `User` object to represent such a user. Creating an instance of a user can be simple at first:
+Let's say we are building a blog. A blog typically has the following types of data: a `User`, a `Post` and a `Comment`.
+
+Creating a user is fairly straight forward:
 
 ```typescript
-const user = new User({ username: "Bob" });
-```
-
-But your system grows and the `User` object starts to hold more state than just the username.
-
-For example a user might have an `activated` state. Your application will behave differently based on this state. Getting a user to the `activated` state _only_ takes a couple of steps...
-
-```typescript
-const user = new User({ username: "Alice" });
-user.performBackgroundCheck();
-user.validateVerificationCode("abc");
-user.confirmSMSCode("123");
-// 25 more steps to take...
-user.performFinalStep();
-user.isActivated(); // true
-```
-
-This means that writing a test where the input is an activated user you have to:
-
-```typescript
-describe("foo", () => {
-  it("should return true for an activated user", () => {
-    const user = new User({ username: "Alice" });
-    user.performBackgroundCheck();
-    user.validateVerificationCode("abc");
-    user.confirmSMSCode("123");
-    // 25 more steps to take...
-    user.performFinalStep();
-
-    const actual = fooService.doSomething(user);
-
-    expect(actual).toBe(true);
-  });
+const user = new User({
+  firstName: "Bob",
+  lastName: "The Builder",
+  phone: "(711) 265-9193",
+  country: "US",
+  email: "bob@fluse.io",
 });
 ```
 
-As the above shows, the test becomes cluttered with just creating the input for the test. The test itself however doesn't really care how this user got into this state, it only cares that it is in the `activated` state.
-
-With Fluse you define a **fixture** to create such a user **once**:
+Next up we have a post which requires an `author`, a `title` and a `message`:
 
 ```typescript
-// src/fixtures/users.ts
+const post = new Post({
+  title: "How to test using fitures",
+  message: "Lorem ipsum....",
+  image: "https://picsum.photos/200",
+  author: user,
+});
+```
+
+Lastly we have comments which requires an `author`, a `title`, a `message` and a `post`.
+
+```typescript
+const comment = new Comment({
+  title: "How to test using fitures",
+  message: "Lorem ipsum....",
+  author: user,
+  post: post,
+});
+```
+
+A comment can also be upvoted, or downvoted:
+
+```typescript
+comment.upvote();
+comment.votes; // 1;
+
+comment.downvote();
+comment.votes; // 0;
+```
+
+A new feature we are building requires us to write a function that retrieves the most upvoted comment of a post. We've implemented the function `getMostUpvotedComment(comments: Comment[])`, time to test it!
+
+```typescript
+// getMostUpvotedComment.test.ts
+it("should return the most upvoted comment", () => {
+  const bob = new User({
+    firstName: "Bob",
+    lastName: "The Builder",
+    phone: "(711) 265-9193",
+    country: "US",
+    email: "bob@fluse.io",
+  });
+  const alice = new User({
+    firstName: "Alice",
+    lastName: "The Malice",
+    phone: "(712) 265-9188",
+    country: "US",
+    email: "alice@fluse.io",
+  });
+  const bobsPost = new Post({
+    title: "How to test using fitures",
+    message: "Lorem ipsum....",
+    image: "https://picsum.photos/200",
+    author: bob,
+  });
+  const comments = Array(10)
+    .fill(0)
+    .map((_, index) => {
+      const comment = new Comment({
+        title: "How to test using fitures",
+        message: "Lorem ipsum....",
+        author: alice,
+        post: bobsPost,
+      });
+    });
+
+  // upvote twice
+  comments[0].upvote();
+  comments[0].upvote();
+
+  const actual = getMostUpvotedComment(comments);
+
+  expect(actual).toBe(comments[0]);
+});
+```
+
+This test does the job, but can you notice how much code was required before we got to the actual test? That's quite a lot and we're only building a simple blog wtih just 3 entities. Also know that we've only written **one** test here, creating a set of data that requires a user, post and comment(s) will be common in our blog, surely we can do better.
+
+Let's see how this might look like if we add Fluse to the mix.
+
+First up, creating a user, post or comment is going to be very common. Let's build some fixtures:
+
+```typescript
+// src/entities/fixtures.ts
 import { fixture } from "fluse";
 import { User } from "./entities/User";
+import { Post } from "./entities/Post";
+import { Comment } from "./entities/Comment";
 
-type Args = {
-  username: string;
+export const userFixture = fixture({
+  create(ctx) {
+    const user = new User({
+      firstName: ctx.faker.name.firstName(),
+      lastName: ctx.faker.name.lastName(),
+      phone: ctx.faker.phone.phoneNumber(),
+      country: ctx.faker.address.countryCode(),
+      email: ctx.faker.internet.email(),
+    });
+    return user;
+  },
+});
+
+type PostArgs = {
+  author: User;
 };
 
-export const activatedUserFixture = fixture({
-  create(ctx, args: Args) {
-    const user = new User({ username: args.username });
-    user.performBackgroundCheck();
-    user.validateVerificationCode("abc");
-    user.confirmSMSCode("123");
-    // 25 more steps to take...
-    user.performFinalStep();
-    return user;
+export const postFixture = fixture({
+  create(ctx, args: PostArgs) {
+    const post = new Post({
+      title: ctx.faker.lorem.words(5),
+      message: ctx.faker.lorem.words(40),
+      image: ctx.faker.image.imageUrl(),
+      author: args.author,
+    });
+
+    return post;
+  },
+});
+
+type CommentArgs = {
+  author: User;
+  post: Post;
+};
+
+export const commentFixture = fixture({
+  create(ctx, args: PostArgs) {
+    const comment = new Comment({
+      title: ctx.faker.lorem.words(5),
+      message: ctx.faker.lorem.words(40),
+      author: args.author,
+      post: args.post,
+    });
+
+    return comment;
   },
 });
 ```
 
-Writing the same test now becomes:
+Let's recap quickly what we've done here. We created 3 `fixtures`:
+
+- a `userFixture` to create a random user
+- a `postFixture` to create random post, for a given `author`
+- a `commentFixture` to create random comment, for a given `author` and `post`
+
+Now let's go back to our test:
 
 ```typescript
-// src/fooService.test.ts
-import { createExecutor } from "fluse";
-import { activatedUserFixture } from "./fixtures/users";
+// getMostUpvotedComment.test.ts
+import { createExecutor, combine } from "fluse";
+import fakerPlugin from "fluse-plugin-faker";
+import { userFixture, postFixture, commentFixture } from "./entities/fixtures";
 
-const execute = createExecutor();
+const execute = createExecutor({ plugins: [fakerPlugin()] });
 
-describe("foo", () => {
-  it("should return true for an activated user", async () => {
-    const { userBob } = await execute(
-      activatedUserFixture("userBob", { username: "Bob" })
-    );
-    const actual = fooService.doSomething(userBob);
-    expect(actual).toBe(true);
-  });
+it("should return the most upvoted comment", async () => {
+  const scenario = combine()
+    .and(userFixture("bob"))
+    .and(userFixture("alice"))
+    .and(({ bob }) => postFixture("bobsPost", { author: bob }))
+    .and(({ alice, bobsPost }) =>
+      commentFixture(
+        { name: "alicesComments", list: 10 },
+        { author: alice, post: bobsPost }
+      )
+    )
+    .toFixture();
+
+  const { alicesComments } = await execute(scenario);
+
+  // Upvote the first comment twice.
+  alicesComments[0].upvote();
+  alicesComments[0].upvote();
+
+  const actual = getMostUpvotedComment(alicesComments);
+
+  expect(actual).toBe(alicesComments[0]);
 });
 ```
 
-Notice how the test becomes a lot cleaner because we've moved all the setup code for an `activated` user into its own fixture. We can focus on the thing we are testing and not the input we need.
+Let's recap what we've done to our test.
 
-As a bonus the fixture is also re-usable for any other test that might need an activated user.
+We **combined** our previously created fixtures into a new fixture `scenario`. This is the input data we are testing against:
 
-:::note
-You might have noticed the `"userBob"` as a first argument to `activatedUserFixture`. This is a requirement by Fluse, it's a unique name for the created fixture. The advantages of this name will become clear when you start [combining fixtures](./combining-fixtures.md).
-:::
+- A user Bob with one post
+- A user Alice who made 10 comments on Bob's post
+
+It's actually the same data set as the first test. The difference between this and the previous test is that we are only specifing the relationships which we are interested in.
+
+Notice how our test got a lot less cluttered with setting up all this random data. As a bonus the fixtures we created are also re-usable for any other test.
 
 Find out more about what you can do with fixtures such as:
 

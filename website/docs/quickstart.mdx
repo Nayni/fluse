@@ -42,7 +42,6 @@ yarn add -D fluse
 ### 2. Define your fixtures
 
 ```typescript
-// src/fixtures/userFixture.ts
 import { fixture } from "fluse";
 import { User } from "./entities/User";
 
@@ -59,7 +58,6 @@ export const userFixture = fixture({
 ```
 
 ```typescript
-// src/fixtures/postFixture.ts
 import { fixture } from "fluse";
 import { Post } from "./entities/Post";
 
@@ -78,43 +76,27 @@ export const postFixture = fixture({
 });
 ```
 
-### 3. Combine them together
-
-```typescript
-import { combine } from "fluse";
-import { userFixture } from "./fixtures/userFixture";
-import { postFixture } from "./fixtures/postFixture";
-
-const userWithPostsFixture = combine()
-  .and(userFixture("foo", { username: "foo" }))
-  .and(({ foo }) =>
-    postFixture({ name: "fooPosts", list: 10 }, { author: foo })
-  )
-  .toFixture();
-```
-
-### 4. Use your fixtures
+### 3. Supercharge your tests by combining them together
 
 ```typescript
 import { createExecutor, combine } from "fluse";
 import { userFixture } from "./fixtures/userFixture";
 import { postFixture } from "./fixtures/postFixture";
+import findMostPopularPost from "./findMostPopularPost";
 
 const execute = createExecutor();
 
 const userWithPostsFixture = combine()
-  .and(userFixture("foo", { username: "foo" }))
+  .and(userFixture("foo"))
   .and(({ foo }) =>
     postFixture({ name: "fooPosts", list: 10 }, { author: foo })
   )
   .toFixture();
 
-describe("bar", () => {
-  it("should return the first post of a user.", async () => {
-    const { foo, fooPosts } = await execute(userWithPostsFixture);
+it("should find the most popular post", async () => {
+  const { foo, fooPosts } = await execute(userWithPostsFixture);
+  const mostPopular = findMostPopularPost(foo, fooPosts);
 
-    const actual = bar(foo, fooPosts);
-    expect(actual.title).toBe(fooPosts[0].title);
-  });
+  expect(mostPopular).toBeDefined();
 });
 ```
