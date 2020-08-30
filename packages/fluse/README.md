@@ -7,7 +7,7 @@
   Fluse
 </h1>
 <h2 align="center">
-  Build composable and types-afe data-fixtures.
+  Build composable and type-safe data-fixtures.
 </h2>
 
 <br />
