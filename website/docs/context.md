@@ -1,7 +1,7 @@
 ---
 id: context
-title: Accessing context
-sidebar_label: Accessing context
+title: Context and plugins
+sidebar_label: Context and plugins
 ---
 
 Every fixture you create with Fluse has the ability to access a context object. This context object is used by `plugins` to provide you with additional functionalities such as:
@@ -32,3 +32,4 @@ Have a look at some of our official plugins:
 
 - [plugin-typeorm](./plugin-typeorm.md)
 - [plugin-faker](./plugin-faker.md)
+- [plugin-slonik](./plugin-slonik.md)
