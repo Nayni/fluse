@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 0.4.0 (2020-08-31)
+
+* docs: fix missing args ([7e6ebc6](https://github.com/Nayni/fluse/commit/7e6ebc6))
+* docs: update docs with new argument options ([b06d5c3](https://github.com/Nayni/fluse/commit/b06d5c3))
+* feat: rework fixture arguments and options ([99bdadf](https://github.com/Nayni/fluse/commit/99bdadf))
+
+
+
+
+
 ## <small>0.3.1 (2020-08-30)</small>
 
 * docs: improve docs (#5) ([1cdc851](https://github.com/Nayni/fluse/commit/1cdc851)), closes [#5](https://github.com/Nayni/fluse/issues/5)

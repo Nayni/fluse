@@ -1,7 +1,7 @@
 {
   "name": "fluse-plugin-typeorm",
   "description": "Official TypeORM plugin for fluse.",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "main": "dist/index.js",
   "license": "MIT",
   "author": {

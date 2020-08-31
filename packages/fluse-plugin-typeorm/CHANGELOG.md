@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 0.3.0 (2020-08-31)
+
+* feat: rework fixture arguments and options ([99bdadf](https://github.com/Nayni/fluse/commit/99bdadf))
+
+
+
+
+
 ## <small>0.2.2 (2020-08-30)</small>
 
 * docs: improve docs (#5) ([1cdc851](https://github.com/Nayni/fluse/commit/1cdc851)), closes [#5](https://github.com/Nayni/fluse/issues/5)
