@@ -10,11 +10,11 @@ sidebar_label: fixture()
 
 ```
 fixture<TResult, TArgs>(config: {
-  create: (context: FixtureContext, args: TArgs, list: { index: number, size: number }) => MaybePromise<TResult>;
+  create: (context: FixtureContext, args: TArgs, info: FixtureCreatorInfo) => MaybePromise<TResult>;
 }) => FixtureFactory<TResult, TArgs>
 ```
 
-- `create` **(required)**: The function used to create the fixture's data set. The function receives a [context](./context.md) and optionally some typed [arguments](./supplying-arguments.md), you can also access list options in cases where the fixture is [created as a list](./making-lists.md).
+- `create` **(required)**: The function used to create the fixture's data set. The function receives a [context](./context.md) and optionally some typed [arguments](./supplying-arguments.md), you can also access extra info such as list info in cases where the fixture is [created as a list](./making-lists.md).
 
 ## Example
 
@@ -27,7 +27,7 @@ type UserFixtureArgs = {
 };
 
 const userFixture = fixture({
-  create(ctx, args: UserFixtureArgs) {
+  create(ctx, args: UserFixtureArgs, info) {
     const user = new User({ username: args.username });
     return user;
   },

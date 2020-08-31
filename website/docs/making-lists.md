@@ -11,14 +11,14 @@ import { fixture } from "fluse";
 import { Post } from "./entities/Post";
 
 const postFixture = fixture({
-  async create(ctx, args, { index }) {
-    const post = new Post({ title: `title-${index}` });
+  async create(ctx, args, info) {
+    const post = new Post({ title: `title-${info.list.index}` });
     return post;
   },
 });
 ```
 
-In the example above we've defined a fixture for a single post. Notice how we access the third argument of the `create` function which are list options. These options include:
+In the example above we've defined a fixture for a single post. Notice how we access the third argument of the `create` function which is additional info such as list options. These options include:
 
 - `index`: the current index that is being created.
 - `size`: the total size of the list that was configured (at consume time).
@@ -30,18 +30,8 @@ List options are also available when fixtures are just created as singles. The `
 We can now use this fixture and consume it as a list like so:
 
 ```typescript
-import { fixture } from "fluse";
-import { Post } from "./entities/Post";
-
-const postFixture = fixture({
-  create(ctx, args, { index }) {
-    const post = new Post({ title: `title-${index}` });
-    return post;
-  },
-});
-
 const execute = createExecutor();
-const { posts } = await execute(postFixture({ name: "posts", list: 10 }));
+const { posts } = await execute(postFixture("posts", { list: 10 }));
 ```
 
 The addition of the `list: 10` option will tell Fluse to call the `postFixture` 10 times and accumulate the results into a single array named `posts`.

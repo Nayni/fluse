@@ -29,7 +29,9 @@ Whenever the fixture is used now it will require additional arguments to be pass
 import { createExecutor } from "fluse";
 
 const execute = createExecutor();
-const result = await execute(userFixture("testUser", { username: "test" }));
+const result = await execute(
+  userFixture("testUser", { args: { username: "test" } })
+);
 ```
 
 Notice how we pass in a username, as defined by our `UserFixtureArgs` type. If you are working in TypeScript Fluse will provide you with type information and in this case even complain if you try to use the fixture without passing in a username.

@@ -67,9 +67,9 @@ type PostFixtureArgs = {
 };
 
 export const postFixture = fixture({
-  create(ctx, args: PostFixtureArgs, { index }) {
+  create(ctx, args: PostFixtureArgs, info) {
     const post = new Post({
-      title: `post ${index}`,
+      title: `post ${info.list.index}`,
       author: args.author,
     });
     return post;
@@ -90,15 +90,16 @@ const execute = createExecutor();
 const userWithPostsFixture = combine()
   .and(userFixture("foo"))
   .and(({ foo }) =>
-    postFixture({ name: "fooPosts", list: 10 }, { author: foo })
+    postFixture("fooPosts", { list: 10, args: { author: foo } })
   )
   .toFixture();
 
 it("should find the most popular post", async () => {
   const { foo, fooPosts } = await execute(userWithPostsFixture);
-  const mostPopular = findMostPopularPost(foo, fooPosts);
+  const mostPopular = findMostPopularPost(fooPosts);
 
   expect(mostPopular).toBeDefined();
+  expect(mostPopular.author).toBe(foo);
 });
 ```
 

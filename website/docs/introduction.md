@@ -171,7 +171,7 @@ type CommentArgs = {
 };
 
 export const commentFixture = fixture({
-  create(ctx, args: PostArgs) {
+  create(ctx, args: CommentArgs) {
     const comment = new Comment({
       title: ctx.faker.lorem.words(5),
       message: ctx.faker.lorem.words(40),
@@ -204,12 +204,12 @@ it("should return the most upvoted comment", async () => {
   const scenario = combine()
     .and(userFixture("bob"))
     .and(userFixture("alice"))
-    .and(({ bob }) => postFixture("bobsPost", { author: bob }))
+    .and(({ bob }) => postFixture("bobsPost", { args: { author: bob } }))
     .and(({ alice, bobsPost }) =>
-      commentFixture(
-        { name: "alicesComments", list: 10 },
-        { author: alice, post: bobsPost }
-      )
+      commentFixture("alicesComments", {
+        list: 10,
+        args: { author: alice, post: bobsPost },
+      })
     )
     .toFixture();
 

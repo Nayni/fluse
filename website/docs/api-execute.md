@@ -36,5 +36,5 @@ const fooFixture = fixture({
 });
 
 const { foo } = await execute(fooFixture("foo"));
-const { manyFoos } = await execute(fooFixture({ name: "manyFoos", list: 10 }));
+const { manyFoos } = await execute(fooFixture("manyFoos", { list: 10 }));
 ```

@@ -9,7 +9,6 @@ The big strength of Fluse lies in its re-usability. Creating a single fixture is
 Instead of creating one big monolithic fixture Fluse allows you to combine multiple smaller fixtures into a bigger one. Allowing you to compose together data sets by re-using smaller parts you've defined before. On top of that Fluse does this in a type-safe way.
 
 ```typescript
-// src/fixtures/userFixture.ts
 import { fixture } from "fluse";
 import { User } from "./entities/User";
 
@@ -28,7 +27,6 @@ export const userFixture = fixture({
 Above is our first fixture. It creates a user with a given username. However in the system we are building users can make posts, thus we also have a post fixture:
 
 ```typescript
-// src/fixtures/postFixture.ts
 import { fixture } from "fluse";
 import { Post } from "./entities/Post";
 
@@ -37,9 +35,9 @@ type PostFixtureArgs = {
 };
 
 export const postFixture = fixture({
-  create(ctx, args: PostFixtureArgs, { index }) {
+  create(ctx, args: PostFixtureArgs, info) {
     const post = new Post({
-      title: `post ${index}`,
+      title: `post ${info.list.index}`,
       author: args.author,
     });
     return post;
@@ -47,7 +45,7 @@ export const postFixture = fixture({
 });
 ```
 
-The above fixture create a post for a given author, a user. It also uses some additional [list options](./making-lists.md) which will be useful for when we make many posts at the same time.
+The above fixture creates a post for a given author, it also uses the extra info such as [list options](./making-lists.md) which will be useful for when we make many posts at the same time.
 
 Right now we have 2 separate fixtures. We could naïvely execute those fixtures in sequence, but with Fluse you can do better!
 
@@ -60,9 +58,9 @@ import { userFixture } from "./fixtures/userFixture";
 import { postFixture } from "./fixtures/postFixture";
 
 const userWithPostsFixture = combine()
-  .and(userFixture("foo", { username: "foo" }))
-  .and(({ foo }) =>
-    postFixture({ name: "fooPosts", list: 10 }, { author: foo })
+  .and(userFixture("bob", { args: { username: "Bob" } }))
+  .and(({ bob }) =>
+    postFixture("bobsPosts", { list: 10, args: { author: bob } })
   )
   .toFixture();
 ```
@@ -84,7 +82,10 @@ import { userFixture } from "./fixtures/userFixture";
 import { postFixture } from "./fixtures/postFixture";
 
 const execute = createExecutor();
-const { foo, fooPosts } = await execute(userWithPostsFixture);
+const { bob, bobsPosts } = await execute(userWithPostsFixture);
+
+bob; // User
+bobsPosts; // Post[]
 ```
 
 Notice how Fluse still provides you with a type-safe result which you can inspect and assert. The names you've chosen in the combined fixture are carried over into the result.
