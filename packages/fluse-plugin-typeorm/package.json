@@ -34,7 +34,7 @@
     "lint": "eslint . --ext .ts",
     "compile": "tsc -p tsconfig.build.json",
     "build": "yarn clean && yarn compile",
-    "example": "ts-node-dev --transpileOnly ./example/index.ts",
+    "example": "ts-node-dev --transpile-only ./example/index.ts",
     "precommit": "lint-staged",
     "prepublishOnly": "yarn build"
   },

@@ -10,9 +10,9 @@ type UserFixtureArgs = {
 };
 
 const userFixture = fixture({
-  async create(ctx, args: UserFixtureArgs, { index }) {
+  async create(ctx, args: UserFixtureArgs) {
     const user = new User();
-    user.username = args.username + index;
+    user.username = args.username;
     return ctx.typeorm.entityManager.save(user);
   },
 });
@@ -22,9 +22,9 @@ type PostFixtureArgs = {
 };
 
 const postFixture = fixture({
-  async create(ctx, args: PostFixtureArgs, { index }) {
+  async create(ctx, args: PostFixtureArgs, info) {
     const post = new Post();
-    post.title = "post" + index;
+    post.title = "post" + info.list.index;
     post.author = args.author;
     return ctx.typeorm.entityManager.save(post);
   },
@@ -36,9 +36,9 @@ async function run() {
   });
 
   const userWithPosts = combine()
-    .and(userFixture("foo", { username: "foo" }))
+    .and(userFixture("foo", { args: { username: "foo" } }))
     .and(({ foo }) =>
-      postFixture({ name: "fooPosts", list: 10 }, { author: foo })
+      postFixture("fooPosts", { list: 10, args: { author: foo } })
     )
     .toFixture();
 

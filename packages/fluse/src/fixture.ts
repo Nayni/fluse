@@ -2,105 +2,70 @@
 
 import _ from "lodash";
 import { FixtureContext } from ".";
-import { MaybePromise, StrictlyRecord } from "./utils";
+import { Args, MaybePromise, RequiredKeys, StrictlyRecord } from "./utils";
 
-export type FixtureCreateListConfig = {
-  index: number;
-  size: number;
-};
+export interface FixtureCreatorInfo {
+  list: {
+    index: number;
+    size: number;
+  };
+}
 
-/**
- * Defines the function signature of the fixture's create method.
- */
-type FixtureCreateFn<TResult, TArgs> = (
+type FixtureCreator<TResult, TArgs> = (
   context: FixtureContext,
   args: TArgs,
-  list: FixtureCreateListConfig
+  info: FixtureCreatorInfo
 ) => MaybePromise<TResult>;
 
-/**
- * A fixture's configuration.
- */
-type FixtureConfig<TResult, TArgs> = {
-  /**
-   * The create method of a fixture.
-   * This function will be called internally by 'execute()' to create the desired data.
-   */
-  create: FixtureCreateFn<TResult, TArgs>;
-};
+interface FixtureDefinition<TResult, TArgs> {
+  create: FixtureCreator<TResult, TArgs>;
+}
 
-type FixtureOptions<TName extends string> = {
-  name: TName;
+type FixtureFactoryOptions<TArgs> = Args<TArgs> & {
   list?: number | false;
 };
 
-type FixtureOptionsHasList<T> = T extends { list: number } ? true : false;
+type HasList<TOptions> = TOptions extends { list: number } ? true : false;
 
-type NameOrFixtureOptions<TName extends string> = TName | FixtureOptions<TName>;
-/**
- * Defines a fixture created by the 'fixture()' api.
- */
-export type Fixture<T> = {
-  /** Creates the fixture data. */
+export interface Fixture<T> {
   create: (context: FixtureContext) => Promise<StrictlyRecord<T>>;
-};
-
-/**
- * Creator fnction returning an instance of a Fixture, takes in previously created fixtures in the chain.
- */
-type FixtureFn<TResult, TFixtures> = (fixtures: TFixtures) => Fixture<TResult>;
-
-/** Internal definition of a fixture's result. */
-type FixtureResult<TName extends string, TResult> = { [K in TName]: TResult };
-
-type FixtureFactoryWithoutArgs<TResult> = TResult extends void
-  ? () => Fixture<void>
-  : <TName extends string, TOptions extends NameOrFixtureOptions<TName>>(
-      nameOrOptions: TOptions
-    ) => Fixture<
-      FixtureResult<
-        TName,
-        FixtureOptionsHasList<TOptions> extends true ? TResult[] : TResult
-      >
-    >;
-
-type FixtureFactoryWithArgs<TResult, TArgs> = TResult extends void
-  ? (args: TArgs) => Fixture<void>
-  : <TName extends string, TOptions extends NameOrFixtureOptions<TName>>(
-      nameOrOptions: TOptions,
-      args: TArgs
-    ) => Fixture<
-      FixtureResult<
-        TName,
-        FixtureOptionsHasList<TOptions> extends true ? TResult[] : TResult
-      >
-    >;
-
-type FixtureFactory<TResult, TArgs> = TArgs extends false
-  ? FixtureFactoryWithoutArgs<TResult>
-  : FixtureFactoryWithArgs<TResult, TArgs>;
-
-function isFixtureOptions(value: unknown): value is FixtureOptions<string> {
-  return _.isObject(value) && value.hasOwnProperty("name");
 }
+
+type FixtureFactory<TResult, TArgs> = RequiredKeys<TArgs> extends never
+  ? TResult extends void
+    ? (options?: FixtureFactoryOptions<TArgs>) => Fixture<void>
+    : <TName extends string, TOptions extends FixtureFactoryOptions<TArgs>>(
+        name: TName,
+        options?: TOptions
+      ) => Fixture<
+        {
+          [K in TName]: HasList<TOptions> extends true ? TResult[] : TResult;
+        }
+      >
+  : TResult extends void
+  ? (options: FixtureFactoryOptions<TArgs>) => Fixture<void>
+  : <TName extends string, TOptions extends FixtureFactoryOptions<TArgs>>(
+      name: TName,
+      options: TOptions
+    ) => Fixture<
+      {
+        [K in TName]: HasList<TOptions> extends true ? TResult[] : TResult;
+      }
+    >;
+
+type FixtureFn<TResult, TFixtures> = (fixtures: TFixtures) => Fixture<TResult>;
 
 /**
  * Defines a fixture usable by 'execute()' and 'combine()'.
- * @param config The fixture configuration.
+ * @param definition The fixture definition.
  */
-export function fixture<TResult, TArgs = false>(
-  config: FixtureConfig<TResult, TArgs>
+export function fixture<TResult, TArgs>(
+  definition: FixtureDefinition<TResult, TArgs>
 ): FixtureFactory<TResult, TArgs> {
   return function fixtureFactory<
     TName extends string,
-    TOptions extends NameOrFixtureOptions<TName>
-  >(nameOrOptions: TOptions, args: TArgs) {
-    const name = isFixtureOptions(nameOrOptions)
-      ? nameOrOptions.name
-      : _.isString(nameOrOptions)
-      ? nameOrOptions
-      : undefined;
-
+    TOptions extends FixtureFactoryOptions<TArgs>
+  >(name: TName, options?: TOptions) {
     if (_.isNil(name)) {
       throw new Error(
         "An error occured trying to consume a fixture: " +
@@ -108,14 +73,8 @@ export function fixture<TResult, TArgs = false>(
       );
     }
 
-    const list = isFixtureOptions(nameOrOptions)
-      ? typeof nameOrOptions.list === "number"
-        ? nameOrOptions.list
-        : undefined
-      : undefined;
-
-    if (!_.isNil(list)) {
-      if (list <= 0) {
+    if (!_.isNil(options) && !_.isNil(options.list)) {
+      if (options.list <= 0) {
         throw new Error(
           "An error occured trying to consume a fixture: " +
             "The list option must be a number greater than 0 or 'false'."
@@ -125,15 +84,22 @@ export function fixture<TResult, TArgs = false>(
 
     const create = async (context: FixtureContext) => {
       const results = await Promise.all(
-        Array(list || 1)
+        Array(options?.list || 1)
           .fill(0)
           .map((__, index) =>
-            config.create(context, args, { index, size: list || 1 })
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            definition.create(
+              context,
+              _.defaultTo(options?.args, {} as TArgs),
+              {
+                list: { index: index, size: options?.list || 1 },
+              }
+            )
           )
       );
 
       return {
-        [name]: list ? results : results[0],
+        [name]: options?.list ? results : results[0],
       };
     };
 

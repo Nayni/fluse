@@ -1,6 +1,6 @@
 import _ from "lodash";
 import { FixtureContext } from ".";
-import { combine, fixture, FixtureCreateListConfig } from "./fixture";
+import { combine, fixture, FixtureCreatorInfo } from "./fixture";
 
 describe("'fixture()'", () => {
   it("should create a function", () => {
@@ -22,9 +22,6 @@ describe("'fixture()'", () => {
     });
 
     expect(() => actual(missingName)).toThrowError(/must have a name/);
-    expect(() => actual({ name: missingName })).toThrowError(
-      /must have a name/
-    );
   });
 
   it("should create a function that throws when the list option is a number equal or lower than 0", () => {
@@ -34,10 +31,10 @@ describe("'fixture()'", () => {
       },
     });
 
-    expect(() => actual({ name: "actual", list: 0 })).toThrowError(
+    expect(() => actual("actual", { list: 0 })).toThrowError(
       /The list option must be a number greater than 0/
     );
-    expect(() => actual({ name: "actual", list: -5 })).toThrowError(
+    expect(() => actual("actual", { list: -5 })).toThrowError(
       /The list option must be a number greater than 0/
     );
   });
@@ -77,7 +74,7 @@ describe("'fixture()'", () => {
         },
       });
 
-      const uot = testFixture({ name: "test", list: 10 });
+      const uot = testFixture("test", { list: 10 });
       const actual = await uot.create({});
 
       expect(actual).toEqual(expect.any(Object));
@@ -86,25 +83,26 @@ describe("'fixture()'", () => {
       expect(_.every(actual.test, (v) => v === 1)).toBe(true);
     });
 
-    it("should pass list parameters through as the third argument", async () => {
+    it("should pass info parameters through as the third argument", async () => {
       const createFn = jest.fn<
         number,
-        [FixtureContext, unknown, FixtureCreateListConfig]
+        [FixtureContext, unknown, FixtureCreatorInfo]
       >();
       const testFixture = fixture({
         create: createFn,
       });
 
-      const uot = testFixture({ name: "test", list: 2 }, {});
+      const uot = testFixture("test", { list: 2 });
       const actual = await uot.create({});
 
       expect(actual).toEqual(expect.any(Object));
       expect(createFn).toHaveBeenCalled();
       expect(createFn.mock.calls[0][2]).toBeDefined();
-      expect(createFn.mock.calls[0][2].index).toBe(0);
-      expect(createFn.mock.calls[1][2].index).toBe(1);
-      expect(createFn.mock.calls[0][2].size).toBe(2);
-      expect(createFn.mock.calls[1][2].size).toBe(2);
+      expect(createFn.mock.calls[0][2].list).toBeDefined();
+      expect(createFn.mock.calls[0][2].list.index).toBe(0);
+      expect(createFn.mock.calls[1][2].list.index).toBe(1);
+      expect(createFn.mock.calls[0][2].list.size).toBe(2);
+      expect(createFn.mock.calls[1][2].list.size).toBe(2);
     });
   });
 });
@@ -188,8 +186,8 @@ describe("'combine()'", () => {
 
     const uot = combine()
       .and(fixtureOne("one"))
-      .and(({ one }) => fixtureTwo("two", { one }))
-      .and(({ one, two }) => fixtureThree("three", { one, two }))
+      .and(({ one }) => fixtureTwo("two", { args: { one } }))
+      .and(({ one, two }) => fixtureThree("three", { args: { one, two } }))
       .toFixture();
 
     const actual = await uot.create({});
