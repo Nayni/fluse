@@ -1,6 +1,7 @@
 import _ from "lodash";
 import semver from "semver";
 import { Fixture, isFixture } from "./fixture";
+import { FluseTypes, withFluseSymbol } from "./internal";
 import {
   composePluginAfterHooks,
   composePluginBeforeHooks,
@@ -60,6 +61,8 @@ export function createExecutor(options?: CreateExecutorOptions) {
     }
 
     const rootContext = {};
+    withFluseSymbol(rootContext, FluseTypes.Context);
+
     const beforeHooks = composePluginBeforeHooks(plugins);
     const afterHooks = composePluginAfterHooks(plugins);
     const executor = composePluginExecutorMiddlewares<TResult>(
