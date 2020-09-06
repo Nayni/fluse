@@ -2,7 +2,15 @@
 
 import _ from "lodash";
 import { FixtureContext } from ".";
-import { Args, MaybePromise, RequiredKeys, StrictlyRecord } from "./utils";
+import { FluseTypes, isFluseType, withFluseSymbol } from "./internal";
+import {
+  Args,
+  isDefined,
+  keysOf,
+  MaybePromise,
+  RequiredKeys,
+  StrictlyRecord,
+} from "./utils";
 
 export interface FixtureCreatorInfo {
   list: {
@@ -27,31 +35,43 @@ type FixtureFactoryOptions<TArgs> = Args<TArgs> & {
 
 type HasList<TOptions> = TOptions extends { list: number } ? true : false;
 
+interface FixtureFactoryWithOptionalArgs<TResult, TArgs> {
+  <TName extends string, TOptions extends FixtureFactoryOptions<TArgs>>(
+    name: TName,
+    options?: TOptions
+  ): Fixture<
+    {
+      [K in TName]: HasList<TOptions> extends true ? TResult[] : TResult;
+    }
+  >;
+
+  asArg<TOptions extends FixtureFactoryOptions<TArgs>>(
+    options?: TOptions
+  ): HasList<TOptions> extends true ? TResult[] : TResult;
+}
+
+interface FixtureFactoryWithRequiredArgs<TResult, TArgs> {
+  <TName extends string, TOptions extends FixtureFactoryOptions<TArgs>>(
+    name: TName,
+    options: TOptions
+  ): Fixture<
+    {
+      [K in TName]: HasList<TOptions> extends true ? TResult[] : TResult;
+    }
+  >;
+
+  asArg<TOptions extends FixtureFactoryOptions<TArgs>>(
+    options: TOptions
+  ): HasList<TOptions> extends true ? TResult[] : TResult;
+}
+
 export interface Fixture<T> {
   create: (context: FixtureContext) => Promise<StrictlyRecord<T>>;
 }
 
 type FixtureFactory<TResult, TArgs> = RequiredKeys<TArgs> extends never
-  ? TResult extends void
-    ? (options?: FixtureFactoryOptions<TArgs>) => Fixture<void>
-    : <TName extends string, TOptions extends FixtureFactoryOptions<TArgs>>(
-        name: TName,
-        options?: TOptions
-      ) => Fixture<
-        {
-          [K in TName]: HasList<TOptions> extends true ? TResult[] : TResult;
-        }
-      >
-  : TResult extends void
-  ? (options: FixtureFactoryOptions<TArgs>) => Fixture<void>
-  : <TName extends string, TOptions extends FixtureFactoryOptions<TArgs>>(
-      name: TName,
-      options: TOptions
-    ) => Fixture<
-      {
-        [K in TName]: HasList<TOptions> extends true ? TResult[] : TResult;
-      }
-    >;
+  ? FixtureFactoryWithOptionalArgs<TResult, TArgs>
+  : FixtureFactoryWithRequiredArgs<TResult, TArgs>;
 
 type FixtureFn<TResult, TFixtures> = (fixtures: TFixtures) => Fixture<TResult>;
 
@@ -59,10 +79,10 @@ type FixtureFn<TResult, TFixtures> = (fixtures: TFixtures) => Fixture<TResult>;
  * Defines a fixture usable by 'execute()' and 'combine()'.
  * @param definition The fixture definition.
  */
-export function fixture<TResult, TArgs>(
+export function fixture<TResult, TArgs = unknown>(
   definition: FixtureDefinition<TResult, TArgs>
 ): FixtureFactory<TResult, TArgs> {
-  return function fixtureFactory<
+  function fixtureFactory<
     TName extends string,
     TOptions extends FixtureFactoryOptions<TArgs>
   >(name: TName, options?: TOptions) {
@@ -82,40 +102,73 @@ export function fixture<TResult, TArgs>(
       }
     }
 
-    const create = async (context: FixtureContext) => {
-      const results = await Promise.all(
-        Array(options?.list || 1)
-          .fill(0)
-          .map((__, index) =>
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            definition.create(
-              context,
-              _.defaultTo(options?.args, {} as TArgs),
-              {
-                list: { index: index, size: options?.list || 1 },
-              }
-            )
-          )
-      );
+    const fixture = {
+      create: async (context: FixtureContext) => {
+        const results: TResult[] = [];
+        const size = options?.list || 1;
 
-      return {
-        [name]: options?.list ? results : results[0],
-      };
+        for (let i = 0; i < size; i++) {
+          const args = await unwrapArgs(
+            _.defaultTo(options?.args, {} as TArgs),
+            context
+          );
+          const result = await definition.create(context, args, {
+            list: { index: i, size },
+          });
+
+          results.push(result);
+        }
+
+        return {
+          [name]: options?.list ? results : results[0],
+        };
+      },
     };
 
-    return { create };
-  } as any;
+    withFluseSymbol(fixture, FluseTypes.Fixture);
+
+    return fixture;
+  }
+
+  fixtureFactory.asArg = function <
+    TOptions extends FixtureFactoryOptions<TArgs>
+  >(options?: TOptions) {
+    function fixtureAsArg(name: string) {
+      return fixtureFactory(name, options);
+    }
+
+    withFluseSymbol(fixtureAsArg, FluseTypes.AsArg);
+
+    return fixtureAsArg;
+  };
+
+  withFluseSymbol(fixtureFactory, FluseTypes.FixtureFactory);
+
+  return (fixtureFactory as unknown) as FixtureFactory<TResult, TArgs>;
 }
 
 /**
  * Checks whether value is a fixture.
  */
 export function isFixture(value: any): value is Fixture<any> {
-  return (
-    _.isObject(value) &&
-    value.hasOwnProperty("create") &&
-    _.isFunction((value as any).create)
-  );
+  return isDefined(value) && isFluseType(value, FluseTypes.Fixture);
+}
+
+export async function unwrapArgs<TArgs>(args: TArgs, context: FixtureContext) {
+  const unwrappedArgs: Record<any, any> = {};
+
+  for (const argKey of keysOf(args)) {
+    const arg = args[argKey];
+
+    if (_.isFunction(arg) && isFluseType(arg, FluseTypes.AsArg)) {
+      const unwrappedArg = await arg(argKey).create(context);
+      unwrappedArgs[argKey] = unwrappedArg[argKey];
+    } else {
+      unwrappedArgs[argKey] = arg;
+    }
+  }
+
+  return unwrappedArgs as TArgs;
 }
 
 /**
@@ -157,8 +210,8 @@ export class CombinedFixtureBuilder<TFixtures extends {} = {}> {
    * Creates a new single fixture of the combined result, can be consumed by 'execute()'.
    */
   toFixture(): Fixture<TFixtures> {
-    return {
-      create: async (context) => {
+    const fixture = {
+      create: async (context: FixtureContext) => {
         const fixtures: Record<string, any> = {};
         for (const fixtureFn of this.fixtureFns) {
           const fixture = fixtureFn(fixtures);
@@ -172,17 +225,6 @@ export class CombinedFixtureBuilder<TFixtures extends {} = {}> {
           }
 
           const result = await fixture.create(context);
-
-          if (_.isNil(result)) {
-            continue;
-          }
-
-          if (!_.isPlainObject(result)) {
-            throw new Error(
-              "An unexpected error occured while executing fixture combination: " +
-                "one of your fixtures did not return a plain object."
-            );
-          }
 
           Object.keys(result).forEach((key) => {
             if (fixtures[key]) {
@@ -200,6 +242,10 @@ export class CombinedFixtureBuilder<TFixtures extends {} = {}> {
         return fixtures as StrictlyRecord<TFixtures>;
       },
     };
+
+    withFluseSymbol(fixture, FluseTypes.Fixture);
+
+    return fixture;
   }
 }
 

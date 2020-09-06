@@ -25,3 +25,7 @@ export function isDefined<T>(value: T | null | undefined): value is T {
   return !_.isNil(value);
 }
 /* eslint-enable @typescript-eslint/no-explicit-any */
+
+export function keysOf<T>(value: T) {
+  return Object.keys(value) as (keyof T)[];
+}
