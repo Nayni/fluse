@@ -1,4 +1,4 @@
-import { PluginFn } from "fluse";
+import { createPlugin } from "fluse";
 import {
   Connection,
   createConnection,
@@ -19,62 +19,51 @@ type TypeORMContext = {
   entityManager: EntityManager;
 };
 
-declare module "fluse" {
-  interface FixtureContext {
-    typeorm: TypeORMContext;
-  }
-}
-
-const plugin: PluginFn<TypeORMPluginConfig> = (config = {}) => {
+function typeORMPlugin(config: TypeORMPluginConfig) {
   const {
-    connection = "default",
+    connection,
     transaction = true,
     synchronize = false,
     dropBeforeSync = false,
   } = config;
 
-  const getOrCreateConnection = async () => {
+  function getOrCreateConnection() {
     if (connection instanceof Connection) {
-      return connection;
+      return Promise.resolve(connection);
     }
     if (getConnectionManager().has(connection)) {
-      return getConnection(connection);
+      return Promise.resolve(getConnection(connection));
     }
 
-    return await createConnection(connection);
-  };
+    return createConnection(connection);
+  }
 
-  return {
+  return createPlugin<TypeORMContext>({
     name: "typeorm",
     version: "0.x",
-    async onBefore() {
+    async execute(next) {
+      const connection = await getOrCreateConnection();
+
       if (synchronize) {
-        const connection = await getOrCreateConnection();
         await connection.synchronize(dropBeforeSync);
       }
-    },
-    onCreateExecutor() {
-      return async (fixture, next) => {
-        const connection = await getOrCreateConnection();
 
-        if (transaction) {
-          return connection.transaction(async (entityManager) => {
-            const result = await next(fixture, {
-              connection,
-              entityManager,
-            });
-            return result;
-          });
-        } else {
-          const result = await next(fixture, {
+      if (transaction) {
+        return connection.transaction((entityManager) => {
+          return next({
             connection,
-            entityManager: connection.createEntityManager(),
+            entityManager,
           });
-          return result;
-        }
-      };
+        });
+      } else {
+        const entityManager = connection.createEntityManager();
+        return next({
+          connection,
+          entityManager,
+        });
+      }
     },
-  };
-};
+  });
+}
 
-export default plugin;
+export default typeORMPlugin;

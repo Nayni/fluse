@@ -1,7 +1,2 @@
-/* eslint-disable @typescript-eslint/no-empty-interface */
-export interface FixtureContext {}
-/* eslint-enable @typescript-eslint/no-empty-interface */
-
-export { createExecutor, CreateExecutorOptions } from "./execute";
-export { combine, CombinedFixtureBuilder, fixture } from "./fixture";
-export { PluginFn } from "./plugin";
+export { fluse } from "./core";
+export { createPlugin, Plugin } from "./plugin";

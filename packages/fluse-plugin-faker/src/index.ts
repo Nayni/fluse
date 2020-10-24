@@ -1,22 +1,22 @@
 import faker from "faker";
-import { PluginFn } from "fluse";
+import { createPlugin } from "fluse";
 
 type FakerContext = Faker.FakerStatic;
 
-declare module "fluse" {
-  interface FixtureContext {
-    faker: FakerContext;
-  }
+interface FakerPluginConfig {
+  faker?: Faker.FakerStatic;
 }
 
-const plugin: PluginFn<unknown> = () => {
-  return {
+function fakerPlugin(config?: FakerPluginConfig) {
+  const fakerInstance = config?.faker ?? faker;
+
+  return createPlugin<FakerContext>({
     name: "faker",
     version: "0.x",
-    onCreateExecutor() {
-      return (fixture, next) => next(fixture, faker);
+    execute(next) {
+      return next(fakerInstance);
     },
-  };
-};
+  });
+}
 
-export default plugin;
+export default fakerPlugin;

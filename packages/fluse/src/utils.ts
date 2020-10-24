@@ -2,6 +2,8 @@ import _ from "lodash";
 
 export type MaybePromise<T> = T | Promise<T>;
 
+export type UnwrapPromise<T> = T extends PromiseLike<infer U> ? U : T;
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export type StrictlyRecord<T> = T extends Record<string, any>
   ? T extends Array<any>
@@ -29,3 +31,7 @@ export function isDefined<T>(value: T | null | undefined): value is T {
 export function keysOf<T>(value: T) {
   return Object.keys(value) as (keyof T)[];
 }
+
+export type ExcludeKeysByValue<T, V> = {
+  [K in keyof T]: T[K] extends V ? never : K;
+}[keyof T];

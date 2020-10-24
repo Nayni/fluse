@@ -1,6 +1,6 @@
+/* eslint-disable @typescript-eslint/ban-types */
 import _ from "lodash";
-import { FixtureContext } from ".";
-import { combine, fixture, FixtureCreatorInfo } from "./fixture";
+import { CombinedFixtureBuilder, fixture, FixtureCreatorInfo } from "./fixture";
 
 describe("'fixture()'", () => {
   it("should create a function", () => {
@@ -55,7 +55,7 @@ describe("'fixture()'", () => {
   it("should be possible to use fixture factories as arguments", async () => {
     const createFn = jest.fn<
       number,
-      [FixtureContext, { foo: number }, FixtureCreatorInfo]
+      [{}, { foo: number }, FixtureCreatorInfo]
     >();
     const testFixture = fixture({
       create: createFn,
@@ -63,7 +63,7 @@ describe("'fixture()'", () => {
 
     const createArgFn = jest.fn<
       number,
-      [FixtureContext, { bar: string }, FixtureCreatorInfo]
+      [{}, { bar: string }, FixtureCreatorInfo]
     >(() => 999);
     const testArgFixture = fixture({
       create: createArgFn,
@@ -115,10 +115,7 @@ describe("'fixture().create()'", () => {
   });
 
   it("should pass info parameters through as the third argument", async () => {
-    const createFn = jest.fn<
-      number,
-      [FixtureContext, unknown, FixtureCreatorInfo]
-    >();
+    const createFn = jest.fn<number, [{}, unknown, FixtureCreatorInfo]>();
     const testFixture = fixture({
       create: createFn,
     });
@@ -137,10 +134,10 @@ describe("'fixture().create()'", () => {
   });
 });
 
-describe("'combine()'", () => {
+describe("'CombinedFixtureBuilder'", () => {
   it("should combine multiple fixtures into one", async () => {
-    const fixtureOneCreate = jest.fn<number, [FixtureContext]>(() => 1);
-    const fixtureTwoCreate = jest.fn<number, [FixtureContext]>(() => 2);
+    const fixtureOneCreate = jest.fn<number, [{}]>(() => 1);
+    const fixtureTwoCreate = jest.fn<number, [{}]>(() => 2);
     const fixtureOne = fixture({
       create: fixtureOneCreate,
     });
@@ -148,7 +145,7 @@ describe("'combine()'", () => {
       create: fixtureTwoCreate,
     });
 
-    const uot = combine()
+    const uot = new CombinedFixtureBuilder<{}>()
       .and(fixtureOne("one"))
       .and(fixtureTwo("two"))
       .toFixture();
@@ -164,15 +161,9 @@ describe("'combine()'", () => {
 
   it("should create a combined fixture that runs fixtures in the same order as they were added", async () => {
     const order: number[] = [];
-    const fixtureOneCreate = jest.fn<number, [FixtureContext]>(() =>
-      order.push(1)
-    );
-    const fixtureTwoCreate = jest.fn<number, [FixtureContext]>(() =>
-      order.push(2)
-    );
-    const fixtureThreeCreate = jest.fn<number, [FixtureContext]>(() =>
-      order.push(3)
-    );
+    const fixtureOneCreate = jest.fn<number, [{}]>(() => order.push(1));
+    const fixtureTwoCreate = jest.fn<number, [{}]>(() => order.push(2));
+    const fixtureThreeCreate = jest.fn<number, [{}]>(() => order.push(3));
     const fixtureOne = fixture({
       create: fixtureOneCreate,
     });
@@ -183,7 +174,7 @@ describe("'combine()'", () => {
       create: fixtureThreeCreate,
     });
 
-    const uot = combine()
+    const uot = new CombinedFixtureBuilder<{}>()
       .and(fixtureOne("one"))
       .and(fixtureTwo("two"))
       .and(fixtureThree("three"))
@@ -196,13 +187,11 @@ describe("'combine()'", () => {
   });
 
   it("should pass partial results to the next fixture in the chain", async () => {
-    const fixtureOneCreate = jest.fn<number, [FixtureContext]>(() => 1);
-    const fixtureTwoCreate = jest.fn<number, [FixtureContext, { one: number }]>(
-      () => 2
-    );
+    const fixtureOneCreate = jest.fn<number, [{}]>(() => 1);
+    const fixtureTwoCreate = jest.fn<number, [{}, { one: number }]>(() => 2);
     const fixtureThreeCreate = jest.fn<
       number,
-      [FixtureContext, { one: number; two: number }]
+      [{}, { one: number; two: number }]
     >(() => 3);
     const fixtureOne = fixture({
       create: fixtureOneCreate,
@@ -214,7 +203,7 @@ describe("'combine()'", () => {
       create: fixtureThreeCreate,
     });
 
-    const uot = combine()
+    const uot = new CombinedFixtureBuilder<{}>()
       .and(fixtureOne("one"))
       .and(({ one }) => fixtureTwo("two", { args: { one } }))
       .and(({ one, two }) => fixtureThree("three", { args: { one, two } }))
@@ -229,28 +218,29 @@ describe("'combine()'", () => {
 
   it("should create fixture that fails at runtime when an invalid fixture is part of the chain", async () => {
     const fixtureOne = fixture({
-      create: jest.fn<number, [FixtureContext]>(() => 1),
+      create: jest.fn<number, [{}]>(() => 1),
     });
 
-    const uot = combine()
+    const uot = new CombinedFixtureBuilder<{}>()
       .and(fixtureOne("one"))
       .and(
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        () => ({ create: jest.fn<number, [FixtureContext]>(() => 1) } as any)
+        () => ({ create: jest.fn<number, [{}]>(() => 1) } as any)
       )
       .toFixture();
 
-    await expect(async () => await uot.create({})).rejects.toThrowError(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await expect(async () => await uot.create({} as any)).rejects.toThrowError(
       /A fixture function did not return a valid fixture/
     );
   });
 
-  it("should create fixture that fails at runtime when duplicate names are present", async () => {
+  it("should create a fixture that fails at runtime when duplicate names are present", async () => {
     const testFixture = fixture({
-      create: jest.fn<number, [FixtureContext]>(() => 1),
+      create: jest.fn<number, [{}]>(() => 1),
     });
 
-    const uot = combine()
+    const uot = new CombinedFixtureBuilder<{}>()
       .and(testFixture("one"))
       .and(testFixture("one"))
       .toFixture();

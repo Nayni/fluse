@@ -1,125 +1,93 @@
-import { FixtureContext } from ".";
-import { fixture } from "./fixture";
-import {
-  composePluginExecutorMiddlewares,
-  ExecutorMiddlewareFn,
-  PluginFn,
-} from "./plugin";
+/* eslint-disable @typescript-eslint/ban-types */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import semver from "semver";
+import { Fixture } from "./fixture";
+import { composeMiddlewares, createPlugin, validatePlugins } from "./plugin";
 
-describe("'composePluginExecutorMiddlewares()'", () => {
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const packageJson = require("../package.json");
+
+describe("'createPlugin()'", () => {
+  it("create a valid plugin", () => {
+    const actual = createPlugin({
+      name: "foo",
+      version: "*",
+      execute(next) {
+        return next();
+      },
+    });
+
+    expect(actual.name).toBe("foo");
+    expect(actual.version).toBe("*");
+    expect(typeof actual.execute).toBe("function");
+  });
+});
+
+describe("'validatePlugins()'", () => {
+  it("should succeed when the plugin's version is compatible", () => {
+    const plugin = createPlugin({
+      name: "foo",
+      version: "*",
+      execute(next) {
+        return next();
+      },
+    });
+
+    validatePlugins({
+      foo: plugin,
+    });
+  });
+
+  it("should throw when the plugin's version is not compatible", () => {
+    const plugin = createPlugin({
+      name: "foo",
+      version: semver.inc(packageJson.version, "major") as string,
+      execute(next) {
+        return next();
+      },
+    });
+
+    expect(() =>
+      validatePlugins({
+        foo: plugin,
+      })
+    ).toThrowError(/is not compatible/);
+  });
+});
+
+describe("'composeMiddlewares()'", () => {
   it("should compose plugins in a FIFO order of execution", async () => {
     const order: number[] = [];
-    const pluginOneExecutor = jest.fn<ExecutorMiddlewareFn, []>(
-      () => (fixture, next) => {
-        order.push(1);
-        return next(fixture, {});
-      }
-    );
-    const pluginOne: PluginFn<unknown> = () => ({
+
+    const pluginOne = createPlugin({
       name: "one",
       version: "*",
-      onCreateExecutor: pluginOneExecutor,
+      execute(next) {
+        order.push(1);
+        return next();
+      },
     });
-
-    const pluginTwoExecutor = jest.fn<ExecutorMiddlewareFn, []>(
-      () => (fixture, next) => {
-        order.push(2);
-        return next(fixture, {});
-      }
-    );
-    const pluginTwo: PluginFn<unknown> = () => ({
+    const pluginTwo = createPlugin({
       name: "two",
       version: "*",
-      onCreateExecutor: pluginTwoExecutor,
+      execute(next) {
+        order.push(2);
+        return next();
+      },
     });
-
-    const fixtureCreate = jest.fn<number, [FixtureContext]>();
-    const testFixture = fixture({
-      create: fixtureCreate,
-    });
-
-    const execute = composePluginExecutorMiddlewares(
-      [pluginOne(), pluginTwo()],
-      (fixture, context) => fixture.create(context)
+    const testFixture: Fixture<{}, { foo: number }> = {
+      create: jest.fn(),
+    };
+    const resolve = composeMiddlewares<{}>(
+      {
+        one: pluginOne,
+        two: pluginTwo,
+      },
+      (context) => testFixture.create(context)
     );
 
-    const actual = await execute(testFixture("test"), {});
+    await resolve({});
 
-    expect(actual).toBeDefined();
     expect(order).toEqual([1, 2]);
-  });
-
-  it("should compose into an executor that throws when a plugin passes an invalid context", async () => {
-    const order: number[] = [];
-    const pluginExecutor = jest.fn<ExecutorMiddlewareFn, []>(
-      () => (fixture, next) => {
-        order.push(1);
-        return next(fixture, "iam-not-a-valid-context");
-      }
-    );
-    const plugin: PluginFn<unknown> = () => ({
-      name: "one",
-      version: "*",
-      onCreateExecutor: pluginExecutor,
-    });
-
-    const fixtureCreate = jest.fn<number, [FixtureContext]>();
-    const testFixture = fixture({
-      create: fixtureCreate,
-    });
-
-    const execute = composePluginExecutorMiddlewares(
-      [plugin()],
-      (fixture, context) => fixture.create(context)
-    );
-
-    await expect(
-      async () => await execute(testFixture("test"), {})
-    ).rejects.toThrowError(/invalid context/);
-  });
-
-  it("should compose into an executor that doesn't throw when a plugin doesn't pass a context", async () => {
-    const plugin: PluginFn<unknown> = () => ({
-      name: "one",
-      version: "*",
-      onCreateExecutor: () => (fixture, next) => next(fixture),
-    });
-
-    const fixtureCreate = jest.fn<number, [FixtureContext]>();
-    const testFixture = fixture({
-      create: fixtureCreate,
-    });
-
-    const execute = composePluginExecutorMiddlewares(
-      [plugin()],
-      (fixture, context) => fixture.create(context)
-    );
-
-    const actual = await execute(testFixture("test"), {});
-
-    expect(actual).toBeDefined();
-  });
-
-  it("should deal with missing 'onCreateExecutor'", async () => {
-    const plugin: PluginFn<unknown> = () => ({
-      name: "one",
-      version: "*",
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      onCreateExecutor: () => null as any,
-    });
-
-    const fixtureCreate = jest.fn<number, [FixtureContext]>();
-    const testFixture = fixture({
-      create: fixtureCreate,
-    });
-
-    const execute = composePluginExecutorMiddlewares(
-      [plugin()],
-      (fixture, context) => fixture.create(context)
-    );
-
-    const actual = await execute(testFixture("test"), {});
-
-    expect(actual).toBeDefined();
   });
 });

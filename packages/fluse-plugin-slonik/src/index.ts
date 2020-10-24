@@ -1,4 +1,4 @@
-import { PluginFn } from "fluse";
+import { createPlugin } from "fluse";
 import { CommonQueryMethodsType, DatabasePoolType } from "slonik";
 
 type SlonikContext = CommonQueryMethodsType;
@@ -6,50 +6,30 @@ type SlonikContext = CommonQueryMethodsType;
 type SlonikPluginConfig = {
   pool: DatabasePoolType;
   transaction?: boolean;
-  onBefore?: (pool: DatabasePoolType) => Promise<void>;
-  onAfter?: (pool: DatabasePoolType) => Promise<void>;
 };
 
-declare module "fluse" {
-  interface FixtureContext {
-    slonik: SlonikContext;
-  }
-}
-
-const plugin: PluginFn<SlonikPluginConfig> = (config = {}) => {
-  const { pool, transaction = true, onBefore, onAfter } = config;
+function slonikPlugin(config: SlonikPluginConfig) {
+  const { pool, transaction = true } = config;
 
   if (!pool) {
-    throw new Error("Pool should be initialized.");
+    throw new Error(
+      "An error occured trying to initialize 'fluse-plugin-slonik': Pool should be initialized."
+    );
   }
 
-  return {
+  return createPlugin<SlonikContext>({
     name: "slonik",
     version: "0.x",
-    async onBefore() {
-      if (onBefore) {
-        await onBefore(pool);
+    execute(next) {
+      if (transaction) {
+        return pool.transaction((trx) => {
+          return next(trx);
+        });
+      } else {
+        return next(pool);
       }
     },
-    async onAfter() {
-      if (onAfter) {
-        await onAfter(pool);
-      }
-    },
-    onCreateExecutor() {
-      return async (fixture, next) => {
-        if (transaction) {
-          return pool.transaction(async (trx) => {
-            const result = await next(fixture, trx);
-            return result;
-          });
-        } else {
-          const result = await next(fixture, pool);
-          return result;
-        }
-      };
-    },
-  };
-};
+  });
+}
 
-export default plugin;
+export default slonikPlugin;

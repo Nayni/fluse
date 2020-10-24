@@ -1,9 +1,30 @@
-import { combine, createExecutor, fixture } from "fluse";
+import { createPlugin, fluse } from "fluse";
 import "reflect-metadata";
 import { createConnection } from "typeorm";
 import typeormPlugin from "../src";
 import { Post } from "./entities/Post";
 import { User } from "./entities/User";
+
+const secondPlugin = createPlugin<{ second: number }>({
+  name: "secondPlugin",
+  version: "*",
+  execute(next) {
+    console.log("In second plugin");
+    return next({ second: 2 });
+  },
+});
+
+const { fixture, combine, execute } = fluse({
+  plugins: {
+    orm: typeormPlugin({
+      connection: "default",
+      transaction: true,
+      synchronize: true,
+      dropBeforeSync: true,
+    }),
+    second: secondPlugin,
+  },
+});
 
 type UserFixtureArgs = {
   username: string;
@@ -11,9 +32,10 @@ type UserFixtureArgs = {
 
 const userFixture = fixture({
   async create(ctx, args: UserFixtureArgs) {
+    console.log("Context: ", ctx);
     const user = new User();
     user.username = args.username;
-    return ctx.typeorm.entityManager.save(user);
+    return ctx.orm.entityManager.save(user);
   },
 });
 
@@ -26,15 +48,11 @@ const postFixture = fixture({
     const post = new Post();
     post.title = "post" + info.list.index;
     post.author = args.author;
-    return ctx.typeorm.entityManager.save(post);
+    return ctx.orm.entityManager.save(post);
   },
 });
 
 async function run() {
-  const execute = createExecutor({
-    plugins: [typeormPlugin({ connection: "default", transaction: true })],
-  });
-
   const userWithPosts = combine()
     .and(userFixture("foo", { args: { username: "foo" } }))
     .and(({ foo }) =>
@@ -47,9 +65,6 @@ async function run() {
 }
 
 createConnection()
-  .then(async (connection) => {
-    await connection.synchronize(true);
-  })
   .then(run)
   .then(() => {
     console.log("Done");
