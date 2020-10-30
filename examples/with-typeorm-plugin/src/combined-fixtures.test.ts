@@ -18,7 +18,7 @@ beforeAll(async () => {
   });
 });
 
-it("should a combined fixture scenario", async () => {
+it("should create a fixture scenario", async () => {
   // Combine fixtures to create real world scenario's which you can refer to in tests.
   // In this scenario we'll create two users: Bob and Alice, and give them 5 posts respectively with some comments.
   const postsFromBobAndAlice = combine()

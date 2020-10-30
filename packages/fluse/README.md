@@ -42,64 +42,119 @@ or `npm`:
 npm install --save-dev fluse
 ```
 
-Next, define your fixtures. Here are some quick examples:
+## The gist
+
+Define fixtures based on your own data models.
 
 ```typescript
-import { fixture } from "fluse";
-import { User } from "./entities/User";
-import { Post } from "./entities/Post";
+// file: fixtures.ts
+import { fluse } from "fluse";
+import fakerPlugin from "fluse-plugin-faker";
+import { Comment } from "./model/Comment";
+import { Post } from "./model/Post";
+import { User } from "./model/User";
 
-type UserFixtureArgs = {
-  username: string;
-};
-
-export const userFixture = fixture({
-  create(ctx, args: UserFixtureArgs) {
-    const user = new User({ username: args.username });
-    return user;
+export const { fixture, combine, execute } = fluse({
+  plugins: {
+    faker: fakerPlugin(),
   },
 });
-```
 
-```typescript
-type PostFixtureArgs = {
+export const userFixture = fixture<User>({
+  create({ faker }) {
+    return new User({
+      username: faker.internet.userName(),
+    });
+  },
+});
+
+export interface CommentArgs {
   author: User;
-};
+}
 
-export const postFixture = fixture({
-  create(ctx, args: PostFixtureArgs, info) {
-    const post = new Post({
-      title: `post ${info.list.index}`,
+export const commentFixture = fixture<Comment, CommentArgs>({
+  create({ faker }, args) {
+    return new Comment({
+      message: faker.lorem.slug(),
       author: args.author,
     });
-    return post;
+  },
+});
+
+export interface PostArgs {
+  author: User;
+  comments: Comment[];
+}
+
+export const postFixture = fixture<Post, PostArgs>({
+  create({ faker }, args) {
+    return new Post({
+      title: faker.lorem.slug(),
+      body: faker.lorem.paragraphs(4),
+      author: args.author,
+      comments: args.comments,
+    });
   },
 });
 ```
 
-Supercharge your tests by combining fixtures together:
+Supercharge your tests!
 
 ```typescript
-import { createExecutor, combine } from "fluse";
-import { userFixture } from "./fixtures/userFixture";
-import { postFixture } from "./fixtures/postFixture";
-import findMostPopularPost from "./findMostPopularPost";
+// Consume a single fixture and let Fluse do the heavy lifting
+it("should create many posts", async () => {
+  const { manyPosts } = await execute(
+    postFixture("manyPosts", {
+      list: 3,
+      args: {
+        author: userFixture.asArg(),
+        comments: commentFixture.asArg({
+          list: 3,
+          args: { author: userFixture.asArg() },
+        }),
+      },
+    })
+  );
+});
 
-const execute = createExecutor();
+// Make complex scenario's
+it("should create a fixture scenario", async () => {
+  const postsFromBobAndAlice = combine()
+    .and(userFixture("bob"))
+    .and(userFixture("alice"))
+    .and(({ bob }) =>
+      postFixture("bobsPosts", {
+        list: 5,
+        args: {
+          author: bob,
+          comments: commentFixture.asArg({
+            list: 3,
+            args: {
+              author: userFixture.asArg(),
+            },
+          }),
+        },
+      })
+    )
+    .and(({ alice }) =>
+      postFixture("alicesPosts", {
+        list: 5,
+        args: {
+          author: alice,
+          comments: commentFixture.asArg({
+            list: 3,
+            args: {
+              author: userFixture.asArg(),
+            },
+          }),
+        },
+      })
+    )
+    .toFixture();
 
-const userWithPostsFixture = combine()
-  .and(userFixture("foo"))
-  .and(({ foo }) =>
-    postFixture("fooPosts", { list: 10, args: { author: foo } })
-  )
-  .toFixture();
-
-it("should find the most popular post", async () => {
-  const { foo, fooPosts } = await execute(userWithPostsFixture);
-  const mostPopular = findMostPopularPost(fooPosts);
-
-  expect(mostPopular).toBeDefined();
-  expect(mostPopular.author).toBe(foo);
+  const { bob, bobsPosts, alice, alicesPosts } = await execute(
+    postsFromBobAndAlice
+  );
 });
 ```
 
