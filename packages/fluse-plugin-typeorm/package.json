@@ -50,7 +50,6 @@
     "rimraf": "3.0.2",
     "sqlite3": "5.0.0",
     "ts-node-dev": "1.0.0-pre.61",
-    "typeorm": "0.2.25",
     "typescript": "4.0.2"
   },
   "peerDependencies": {

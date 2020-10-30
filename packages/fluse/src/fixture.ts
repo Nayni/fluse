@@ -18,7 +18,7 @@ export interface FixtureCreatorInfo {
   };
 }
 
-type FixtureCreator<TContext, TResult, TArgs> = (
+export type FixtureCreator<TContext, TResult, TArgs> = (
   context: TContext,
   args: TArgs,
   info: FixtureCreatorInfo
@@ -28,13 +28,15 @@ export interface FixtureDefinition<TContext, TResult, TArgs> {
   create: FixtureCreator<TContext, TResult, TArgs>;
 }
 
-type FixtureFactoryOptions<TArgs> = Args<TArgs> & {
+export type FixtureFactoryOptions<TArgs> = Args<TArgs> & {
   list?: number | false;
 };
 
-type HasList<TOptions> = TOptions extends { list: number } ? true : false;
+export type HasList<TOptions> = TOptions extends { list: number }
+  ? true
+  : false;
 
-interface FixtureFactoryWithOptionalArgs<TContext, TResult, TArgs> {
+export interface FixtureFactoryWithOptionalArgs<TContext, TResult, TArgs> {
   <TName extends string, TOptions extends FixtureFactoryOptions<TArgs>>(
     name: TName,
     options?: TOptions
@@ -50,7 +52,7 @@ interface FixtureFactoryWithOptionalArgs<TContext, TResult, TArgs> {
   ): HasList<TOptions> extends true ? TResult[] : TResult;
 }
 
-interface FixtureFactoryWithRequiredArgs<TContext, TResult, TArgs> {
+export interface FixtureFactoryWithRequiredArgs<TContext, TResult, TArgs> {
   <TName extends string, TOptions extends FixtureFactoryOptions<TArgs>>(
     name: TName,
     options: TOptions
@@ -76,7 +78,7 @@ export type FixtureFactory<TContext, TResult, TArgs> = RequiredKeys<
   ? FixtureFactoryWithOptionalArgs<TContext, TResult, TArgs>
   : FixtureFactoryWithRequiredArgs<TContext, TResult, TArgs>;
 
-type FixtureFn<TContext, TResult, TFixtures> = (
+export type FixtureFn<TContext, TResult, TFixtures> = (
   fixtures: TFixtures
 ) => Fixture<TContext, TResult>;
 

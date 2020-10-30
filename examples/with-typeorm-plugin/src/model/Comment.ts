@@ -2,13 +2,13 @@ import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { User } from "./User";
 
 @Entity()
-export class Post {
+export class Comment {
   @PrimaryGeneratedColumn("increment")
-  id!: string;
+  id!: number;
 
-  @Column()
-  title!: string;
+  @Column("text")
+  message!: string;
 
-  @ManyToOne(() => User, (user) => user.posts)
+  @ManyToOne(() => User, (author) => author.comments)
   author!: User;
 }

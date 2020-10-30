@@ -8,7 +8,7 @@ const packageJson = require("../package.json");
 
 const EMPTY_CONTEXT = Symbol.for("FLUSE_EMPTY_CONTEXT");
 
-type EmptyContext = typeof EMPTY_CONTEXT;
+export type EmptyContext = typeof EMPTY_CONTEXT;
 
 export type FixtureResolver<TContext, TResult = any> = (
   context: TContext

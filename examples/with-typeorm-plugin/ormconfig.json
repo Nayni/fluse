@@ -2,5 +2,5 @@
   "name": "default",
   "type": "sqlite",
   "database": "database.db",
-  "entities": ["example/entities/*.ts"]
+  "entities": ["src/model/*.ts"]
 }

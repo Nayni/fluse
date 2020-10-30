@@ -1,6 +1,6 @@
 {
-  "name": "fluse-example-basic",
-  "description": "A basic example of fluse",
+  "name": "fluse-example-with-typeorm-plugin",
+  "description": "An example of fluse with the typeorm plugin",
   "version": "0.0.1",
   "private": "true",
   "main": "dist/index.js",
@@ -11,16 +11,20 @@
   },
   "scripts": {
     "lint": "eslint . --ext .ts",
-    "start": "jest",
+    "start": "jest --runInBand",
     "precommit": "lint-staged"
   },
   "dependencies": {
     "faker": "^5.1.0",
     "fluse": "^0.5.0",
+    "fluse-plugin-faker": "^0.1.7",
+    "fluse-plugin-typeorm": "^0.3.0",
     "jest": "26.6.1",
     "jest-circus": "26.6.1",
     "jest-environment-node": "26.6.1",
-    "ts-jest": "26.4.3"
+    "sqlite3": "5.0.0",
+    "ts-jest": "26.4.3",
+    "typeorm": "0.2.28"
   },
   "devDependencies": {
     "@types/faker": "4.1.12",

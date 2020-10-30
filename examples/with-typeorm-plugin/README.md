@@ -1,6 +1,10 @@
-# An example of Fluse
+# An example of Fluse using the TypeORM plugin
 
-This example showcases the usage of Fluse without any plugins.
+This example showcases the usage of Fluse using the TypeORM plugin.
+
+By providing the TypeORM plugin you'll have access to your connection and entity manager from TypeORM. This allows you to not just create fixture data objects but also store them in a database.
+
+The examples use a `sqlite` database to demonstrate the possibilities.
 
 Run the example with:
 
