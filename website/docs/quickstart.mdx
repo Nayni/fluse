@@ -39,65 +39,131 @@ yarn add -D fluse
 </Tabs>
 
 
-### 2. Define your fixtures
+### 2. Initialize
 
 ```typescript
-import { fixture } from "fluse";
-import { User } from "./entities/User";
+import { fluse } from "fluse";
 
-type UserFixtureArgs = {
-  username: string;
-};
-
-export const userFixture = fixture({
-  create(ctx, args: UserFixtureArgs) {
-    const user = new User({ username: args.username });
-    return user;
-  },
-});
+export const { fixture, combine, execute } = fluse();
 ```
 
+### 3. Define some data fixtures for your domain
+
 ```typescript
-import { fixture } from "fluse";
-import { Post } from "./entities/Post";
+import { Comment } from "./model/Comment";
+import { Post } from "./model/Post";
+import { User } from "./model/User";
 
-type PostFixtureArgs = {
+export const userFixture = fixture<User>({
+  create() {
+    return new User({
+      userName: faker.internet.userName(),
+    });
+  },
+});
+
+interface CommentArgs {
   author: User;
-};
+}
 
-export const postFixture = fixture({
-  create(ctx, args: PostFixtureArgs, info) {
-    const post = new Post({
-      title: `post ${info.list.index}`,
+export const commentFixture = fixture<Comment, CommentArgs>({
+  create(ctx, args) {
+    return new Comment({
+      message: faker.lorem.slug(),
       author: args.author,
     });
-    return post;
+  },
+});
+
+interface PostArgs {
+  author: User;
+  comments: Comment[];
+}
+
+export const postFixture = fixture<Post, PostArgs>({
+  create(ctx, args) {
+    return new Post({
+      title: faker.lorem.slug(),
+      body: faker.lorem.paragraphs(4),
+      author: args.author,
+      comments: args.comments,
+    });
   },
 });
 ```
 
-### 3. Supercharge your tests by combining them together
+### 3. Supercharge your tests!
 
 ```typescript
-import { createExecutor, combine } from "fluse";
-import { userFixture } from "./fixtures/userFixture";
-import { postFixture } from "./fixtures/postFixture";
-import findMostPopularPost from "./findMostPopularPost";
+it("should create a single post", async () => {
+  const { singlePost } = await execute(
+    postFixture("singlePost", {
+      args: {
+        author: userFixture.asArg(),
+        comments: [],
+      },
+    })
+  );
 
-const execute = createExecutor();
+  expect(singlePost).toBeDefined();
+});
 
-const aliceWithPosts = combine()
-  .and(userFixture("alice"))
-  .and(({ alice }) =>
-    postFixture("alicesPosts", { list: 10, args: { author: alice } })
-  )
-  .toFixture();
+it("should create many posts", async () => {
+  const { manyPosts } = await execute(
+    postFixture("manyPosts", {
+      list: 3,
+      args: {
+        author: userFixture.asArg(),
+        comments: commentFixture.asArg({
+          list: 3,
+          args: { author: userFixture.asArg() },
+        }),
+      },
+    })
+  );
 
-it("should find the most popular post", async () => {
-  const { alice, alicesPosts } = await execute(aliceWithPosts);
-  const mostPopular = findMostPopularPost(alicesPosts);
+  expect(manyPosts).toBeDefined();
+});
 
-  expect(mostPopular).toBeDefined();
-  expect(mostPopular.author).toBe(alice);
+it("should create a fixture scenario", async () => {
+  const postsFromBobAndAlice = combine()
+    .and(userFixture("bob"))
+    .and(userFixture("alice"))
+    .and(({ bob }) =>
+      postFixture("bobsPosts", {
+        list: 5,
+        args: {
+          author: bob,
+          comments: commentFixture.asArg({
+            list: 3,
+            args: {
+              author: userFixture.asArg(),
+            },
+          }),
+        },
+      })
+    )
+    .and(({ alice }) =>
+      postFixture("alicesPosts", {
+        list: 5,
+        args: {
+          author: alice,
+          comments: commentFixture.asArg({
+            list: 3,
+            args: {
+              author: userFixture.asArg(),
+            },
+          }),
+        },
+      })
+    )
+    .toFixture();
+
+  const { bob, bobsPosts, alice, alicesPosts } = await execute(
+    postsFromBobAndAlice
+  );
+
+  expect(bob).toBeDefined();
+  expect(alice).toBeDefined();
 });
 ```
