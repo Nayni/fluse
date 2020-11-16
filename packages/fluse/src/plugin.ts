@@ -6,9 +6,11 @@ import { ExcludeKeysByValue, isDefined, MaybePromise } from "./utils";
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const packageJson = require("../package.json");
 
-const EMPTY_CONTEXT = Symbol.for("FLUSE_EMPTY_CONTEXT");
+export const EMPTY_CONTEXT = Symbol.for("FLUSE_EMPTY_CONTEXT");
+export const EMPTY_OPTIONS = Symbol.for("FLUSE_EMPTY_OPTIONS");
 
 export type EmptyContext = typeof EMPTY_CONTEXT;
+export type EmptyOptions = typeof EMPTY_OPTIONS;
 
 export type FixtureResolver<TContext, TResult = any> = (
   context: TContext
@@ -21,27 +23,34 @@ export type PluginMiddlewareNextFn<
   ? () => Promise<TResult>
   : (context: TContext) => Promise<TResult>;
 
-export type PluginMiddlewareFn<TContext, TResult = any> = (
-  next: PluginMiddlewareNextFn<TContext, TResult>
-) => Promise<TResult>;
+export type PluginMiddlewareFn<
+  TContext,
+  TOptions,
+  TResult = any
+> = TOptions extends EmptyOptions
+  ? (next: PluginMiddlewareNextFn<TContext, TResult>) => Promise<TResult>
+  : (
+      next: PluginMiddlewareNextFn<TContext, TResult>,
+      options: TOptions
+    ) => Promise<TResult>;
 
 export type PluginContextFactory<TContext = any> = () => MaybePromise<TContext>;
 
-export interface Plugin<TContext> {
+export interface Plugin<TContext, TOptions> {
   name: string;
   version: string;
-  execute: PluginMiddlewareFn<TContext>;
+  execute: PluginMiddlewareFn<TContext, TOptions>;
 }
 
-export interface PluginDefinition<TContext> {
+export interface PluginDefinition<TContext, TOptions> {
   name: string;
   version: string;
-  execute: PluginMiddlewareFn<TContext>;
+  execute: PluginMiddlewareFn<TContext, TOptions>;
 }
 
-export type PluginConfig = Record<string, Plugin<any>>;
+export type PluginConfig = Record<string, Plugin<any, any>>;
 
-type RootContextMap<TPluginConfig extends PluginConfig> = {
+export type RootContextMap<TPluginConfig extends PluginConfig> = {
   [K in keyof TPluginConfig]: Parameters<
     Parameters<TPluginConfig[K]["execute"]>[0]
   >[0];
@@ -54,9 +63,20 @@ export type RootContext<TPluginConfig extends PluginConfig> = {
   >]: RootContextMap<TPluginConfig>[K];
 };
 
-export function createPlugin<TContext = EmptyContext>(
-  definition: PluginDefinition<TContext>
-): Plugin<TContext> {
+export type RootOptionsMap<TPluginConfig extends PluginConfig> = {
+  [K in keyof TPluginConfig]: Parameters<TPluginConfig[K]["execute"]>[1];
+};
+
+export type RootOptions<TPluginConfig extends PluginConfig> = {
+  [K in ExcludeKeysByValue<
+    RootOptionsMap<TPluginConfig>,
+    undefined
+  >]?: RootOptionsMap<TPluginConfig>[K];
+};
+
+export function createPlugin<TContext, TOptions = EmptyOptions>(
+  definition: PluginDefinition<TContext, TOptions>
+): Plugin<TContext, TOptions> {
   return definition;
 }
 
@@ -72,11 +92,13 @@ export function validatePlugins(plugins: PluginConfig) {
 
 export function composeMiddlewares<TContext>(
   plugins: PluginConfig,
+  pluginOptions: RootOptions<PluginConfig>,
   resolver: FixtureResolver<TContext, any>
 ): FixtureResolver<TContext, any> {
   let lastResolver = resolver;
   for (const key of Object.keys(plugins).reverse()) {
     const plugin = plugins[key];
+    const options = pluginOptions[key];
 
     const currentNext = plugin.execute;
     const previousNext = lastResolver;
@@ -87,7 +109,7 @@ export function composeMiddlewares<TContext>(
         }
 
         return previousNext(rootContext);
-      });
+      }, options);
     };
   }
 

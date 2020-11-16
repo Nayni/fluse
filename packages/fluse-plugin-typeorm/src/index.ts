@@ -7,48 +7,46 @@ import {
   getConnectionManager,
 } from "typeorm";
 
-type TypeORMPluginConfig = {
-  connection: Connection | string;
+interface TypeORMPluginConfig {
+  connection?: Connection | string;
   transaction?: boolean;
   synchronize?: boolean;
   dropBeforeSync?: boolean;
-};
+}
 
-type TypeORMContext = {
+interface TypeORMContext {
   connection: Connection;
   entityManager: EntityManager;
-};
+}
 
-function typeORMPlugin(config: TypeORMPluginConfig) {
-  const {
-    connection,
-    transaction = true,
-    synchronize = false,
-    dropBeforeSync = false,
-  } = config;
-
-  function getOrCreateConnection() {
-    if (connection instanceof Connection) {
-      return Promise.resolve(connection);
+function typeORMPlugin(config?: TypeORMPluginConfig) {
+  function getOrCreateConnection(opts: TypeORMPluginConfig) {
+    if (opts.connection instanceof Connection) {
+      return Promise.resolve(opts.connection);
     }
-    if (getConnectionManager().has(connection)) {
-      return Promise.resolve(getConnection(connection));
+    if (getConnectionManager().has(opts.connection ?? "default")) {
+      return Promise.resolve(getConnection(opts.connection));
     }
 
-    return createConnection(connection);
+    return createConnection(opts.connection ?? "default");
   }
 
-  return createPlugin<TypeORMContext>({
+  return createPlugin<TypeORMContext, TypeORMPluginConfig>({
     name: "typeorm",
     version: "0.x",
-    async execute(next) {
-      const connection = await getOrCreateConnection();
+    async execute(next, opts) {
+      const options = {
+        ...config,
+        ...opts,
+      };
 
-      if (synchronize) {
-        await connection.synchronize(dropBeforeSync);
+      const connection = await getOrCreateConnection(options);
+
+      if (options.synchronize) {
+        await connection.synchronize(options.dropBeforeSync);
       }
 
-      if (transaction) {
+      if (options.transaction) {
         return connection.transaction((entityManager) => {
           return next({
             connection,

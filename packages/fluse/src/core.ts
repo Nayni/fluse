@@ -12,6 +12,7 @@ import {
   composeMiddlewares,
   PluginConfig,
   RootContext,
+  RootOptions,
   validatePlugins,
 } from "./plugin";
 
@@ -21,7 +22,8 @@ export type FluseOptions<TPluginConfig extends PluginConfig> = {
 
 export interface Fluse<TPluginConfig extends PluginConfig> {
   execute: <TResult>(
-    fixture: Fixture<RootContext<TPluginConfig>, TResult>
+    fixture: Fixture<RootContext<TPluginConfig>, TResult>,
+    options?: RootOptions<TPluginConfig>
   ) => Promise<TResult>;
 
   fixture: <TResult, TArgs = unknown>(
@@ -39,7 +41,8 @@ export function fluse<TPluginConfig extends PluginConfig = never>(
   validatePlugins(plugins);
 
   async function execute<TResult>(
-    fixture: Fixture<RootContext<TPluginConfig>, TResult>
+    fixture: Fixture<RootContext<TPluginConfig>, TResult>,
+    options?: RootOptions<TPluginConfig>
   ) {
     if (!isFixture(fixture)) {
       throw new Error(
@@ -48,11 +51,13 @@ export function fluse<TPluginConfig extends PluginConfig = never>(
       );
     }
 
+    const pluginOptions = options ?? {};
     const rootContext = {} as RootContext<TPluginConfig>;
     withFluseSymbol(rootContext, FluseTypes.Context);
 
     const resolve = composeMiddlewares<RootContext<TPluginConfig>>(
       plugins,
+      pluginOptions,
       (ctx) => {
         return fixture.create(ctx);
       }

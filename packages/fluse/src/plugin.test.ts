@@ -2,14 +2,19 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import semver from "semver";
 import { Fixture } from "./fixture";
-import { composeMiddlewares, createPlugin, validatePlugins } from "./plugin";
+import {
+  composeMiddlewares,
+  createPlugin,
+  EmptyContext,
+  validatePlugins,
+} from "./plugin";
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const packageJson = require("../package.json");
 
 describe("'createPlugin()'", () => {
   it("create a valid plugin", () => {
-    const actual = createPlugin({
+    const actual = createPlugin<EmptyContext>({
       name: "foo",
       version: "*",
       execute(next) {
@@ -25,7 +30,7 @@ describe("'createPlugin()'", () => {
 
 describe("'validatePlugins()'", () => {
   it("should succeed when the plugin's version is compatible", () => {
-    const plugin = createPlugin({
+    const plugin = createPlugin<EmptyContext>({
       name: "foo",
       version: "*",
       execute(next) {
@@ -39,7 +44,7 @@ describe("'validatePlugins()'", () => {
   });
 
   it("should throw when the plugin's version is not compatible", () => {
-    const plugin = createPlugin({
+    const plugin = createPlugin<EmptyContext>({
       name: "foo",
       version: semver.inc(packageJson.version, "major") as string,
       execute(next) {
@@ -59,7 +64,7 @@ describe("'composeMiddlewares()'", () => {
   it("should compose plugins in a FIFO order of execution", async () => {
     const order: number[] = [];
 
-    const pluginOne = createPlugin({
+    const pluginOne = createPlugin<EmptyContext>({
       name: "one",
       version: "*",
       execute(next) {
@@ -67,7 +72,7 @@ describe("'composeMiddlewares()'", () => {
         return next();
       },
     });
-    const pluginTwo = createPlugin({
+    const pluginTwo = createPlugin<EmptyContext>({
       name: "two",
       version: "*",
       execute(next) {
@@ -83,6 +88,7 @@ describe("'composeMiddlewares()'", () => {
         one: pluginOne,
         two: pluginTwo,
       },
+      {},
       (context) => testFixture.create(context)
     );
 

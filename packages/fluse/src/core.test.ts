@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { fluse } from "./core";
 import { CombinedFixtureBuilder, Fixture } from "./fixture";
-import { createPlugin, PluginMiddlewareNextFn } from "./plugin";
+import { createPlugin, EmptyContext, PluginMiddlewareNextFn } from "./plugin";
 
 describe("'execute()'", () => {
   it("should throw when an invalid fixture is provided", async () => {
@@ -53,7 +53,7 @@ describe("'execute()'", () => {
       version: "*",
       execute: pluginTwoExecute,
     });
-    const pluginThree = createPlugin({
+    const pluginThree = createPlugin<EmptyContext, { threeOptions: string }>({
       name: "three",
       version: "*",
       execute(next) {
@@ -73,7 +73,11 @@ describe("'execute()'", () => {
       },
     });
 
-    const actual = await execute(testFixture("test"));
+    const actual = await execute(testFixture("test"), {
+      baz: {
+        threeOptions: "configure me",
+      },
+    });
 
     expect(actual).toBeDefined();
     expect(pluginOneExecute).toHaveBeenCalled();
