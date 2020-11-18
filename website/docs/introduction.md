@@ -5,30 +5,32 @@ sidebar_label: Introduction
 slug: /
 ---
 
-Fluse is a fixture builder. It allows you to build up fixtures in a composable and type-safe way.
+Fluse is a data-fixture builder. It allows you to build up fixtures in a **declarative**, **composable** and **type-safe** way.
 
 ## Why Fluse?
 
-Testing your application or business logic requires input data, as applications grow in complexity providing that input data becomes more and more challenging:
+Testing an application requires data, more specifically it requires data in certain states.
 
-- entities become interconnected
-- getting an entity into a specific state for testing requires a (large) series of steps or other data to be created
-- your logic might be tightly coupled to a database or ORM solution requiring you to persist it first
+In almost every project I've worked on, creating test data would result in a combination of the following approaches:
 
-When trying to maintain this type of code there tends to be two common approaches:
+- Inline entity creation (i.e.: `new User()`),
+- Custom utility functions to make large sets of data
+- External pacakges like `faker` to generate randomness
+- Abusing the built-in ORM solutions like migrations to seed databases while testing
 
-- write a lot of custom code to create fixtures, writing this code is tedious and maintaining it is even worse
-- try to leverage the built-in ORM's solution of seeding the database. This solution usually boils down to abusing the migrations system and starts to fall short when you intensively use this data in your tests
+Sadly these solutions don't scale well and as time passes this quickly results in chaos.
 
-Fluse is a tool specifically designed to help you in making **re-usable** and **type-safe** data fixtures. It allows you to define **small** and **composable** building blocks for creating test data.
+Testing an application should be easy. This starts with generating test data for your application models. Fluse brings you a slightly opinionated way of creating test data using fixtures and in return gives you a toolbelt that consists of:
 
-Fluse's sole focus is to help you create test data and doesn't tie itself to any ORM or database solution. You can however still connect Fluse to your ORM or database of choice by using one of our [official plugins](./context.md).
+- A unified way of defining fixtures
+- A declarative scenario builder, composing fixtures together
+- Built-in supprt for [lists](./making-lists.md) and[ deeply nested structures](./supplying-arguments.md)
+- Type-safety all the way through
+- Extensions in the form of [plugins](./plugin-introduction.md).
 
-## What is a fixture?
+This might all still sound a little vague so let me give you an example!
 
-A fixture is a function that knows how to create a certain type of data within your system.
-
-This might sound a little vague so let's give you an example!
+## Example case: The blog
 
 Let's say we are building a blog. A blog typically has the following types of data: a `User`, a `Post` and a `Comment`.
 
@@ -38,49 +40,39 @@ Creating a user is fairly straight forward:
 const user = new User({
   firstName: "Bob",
   lastName: "The Builder",
+  email: "bob@fluse.io",
   phone: "(711) 265-9193",
   country: "US",
-  email: "bob@fluse.io",
 });
 ```
 
-Next up we have a post which requires an `author`, a `title` and a `message`:
+Next up we have a post:
 
 ```typescript
 const post = new Post({
   title: "How to test using fitures",
-  message: "Lorem ipsum....",
-  image: "https://picsum.photos/200",
+  body: "Lorem ipsum....",
+  image: "https://photos.io/cat.jpg?size=200x200",
   author: user,
 });
 ```
 
-Lastly we have comments which requires an `author`, a `title`, a `message` and a `post`.
+Lastly we have comments:
 
 ```typescript
 const comment = new Comment({
-  title: "How to test using fitures",
   message: "Lorem ipsum....",
   author: user,
-  post: post,
 });
 ```
 
-A comment can also be upvoted, or downvoted:
+In order to add comments to a post, our post entity has a method `addComment(comment: Comment)`.
+
+The feature we are building is to list posts based on the most comments given. A test for this feature would look something like this:
 
 ```typescript
-comment.upvote();
-comment.votes; // 1;
-
-comment.downvote();
-comment.votes; // 0;
-```
-
-A new feature we are building requires us to write a function that retrieves the most upvoted comment of a post. We've implemented the function `getMostUpvotedComment(comments: Comment[])`, time to test it!
-
-```typescript
-// getMostUpvotedComment.test.ts
-it("should return the most upvoted comment", () => {
+// getPostsByCommentCount.test.ts
+it("should return the posts ordered by their comment count (desc)", async () => {
   const bob = new User({
     firstName: "Bob",
     lastName: "The Builder",
@@ -97,148 +89,221 @@ it("should return the most upvoted comment", () => {
   });
   const bobsPost = new Post({
     title: "How to test using fitures",
-    message: "Lorem ipsum....",
-    image: "https://picsum.photos/200",
+    body: "Lorem ipsum....",
+    image: "https://photos.io/cat.jpg?size=200x200",
     author: bob,
   });
-  const comments = Array(10)
+  const bobsPostComments = Array(10)
     .fill(0)
     .map((_, index) => {
       const comment = new Comment({
-        title: "How to test using fitures",
         message: "Lorem ipsum....",
-        author: alice,
+        author: new User({
+          firstName: "Random",
+          lastName: "Commenter",
+          phone: "(711) 265-9193",
+          country: "US",
+          email: `commenter${index}@fluse.io`,
+        }),
         post: bobsPost,
       });
     });
+  bobsPostComments.forEach((comment) => {
+    bobsPost.addComment(comment);
+  });
 
-  // upvote twice
-  comments[0].upvote();
-  comments[0].upvote();
+  const alicesPost = new Post({
+    title: "Unit or integration tests?",
+    body: "Lorem ipsum....",
+    image: "https://photos.io/cat.jpg?size=200x200",
+    author: alice,
+  });
+  const alicesPostComments = Array(5)
+    .fill(0)
+    .map((_, index) => {
+      const comment = new Comment({
+        message: "Lorem ipsum....",
+        author: new User({
+          firstName: "Random",
+          lastName: "Commenter",
+          phone: "(711) 265-9193",
+          country: "US",
+          email: `commenter${index}@fluse.io`,
+        }),
+        post: alicesPost,
+      });
+    });
+  alicesPostComments.forEach((comment) => {
+    alicesPost.addComment(comment);
+  });
 
-  const actual = getMostUpvotedComment(comments);
+  await db.save([bob, alice, bobsPost, alicesPost]);
 
-  expect(actual).toBe(comments[0]);
+  const actual = await getPostsByCommentCount();
+
+  expect(actual[0].id).toBe(bobsPost.id);
+  expect(actual[1].id).toBe(alicesPost.id);
 });
 ```
 
-This test does the job, but can you notice how much code was required before we got to the actual test? That's quite a lot and we're only building a simple blog wtih just 3 entities. Also know that we've only written **one** test here, creating a set of data that requires a user, post and comment(s) will be common in our blog, surely we can do better.
+Do you notice how much **imperative** code is required to set up our test data? All this code **distracts us** from what we are actually testing.
 
-Let's see how this might look like if we add Fluse to the mix.
+However, the attentive reader might consider:
 
-First up, creating a user, post or comment is going to be very common. Let's build some fixtures:
+- I could introduce `faker` here to generate all this data and make it more random
+- I could refactor this setup code into its own function making the test itself less cluttered
+- I could refactor so the database becomes a dependency of my setup code
+
+This is true and is exactly why I created Fluse. I kept noticing that in every project I would end up doing the same things over and over: I craft utility functions for creating single entities, lists and complex scenario's.
+
+The reality however ends up being a mixed bag of inline entity creations, scenario's and other utility functions.
+
+Fluse was designed to **streamline** this process and give you a slightly opinionated workflow for creating data fixtures, by following this workflow Fluse in return gives you some additional benefits such as a **declarative** scenario builder and extra **utilities** for lists and deeply nested structures.
+
+Let's re-build the example above with Fluse.
+
+We start with initializing `fluse` and creating some fixture definitions:
 
 ```typescript
-// src/entities/fixtures.ts
-import { fixture } from "fluse";
+import { fluse } from "fluse";
+import fakerPlugin from "fluse-plugin-faker";
+import typeormPlugin from "fluse-plugin-typeorm";
+import { Comment } from "./entities/Comment";
 import { User } from "./entities/User";
 import { Post } from "./entities/Post";
-import { Comment } from "./entities/Comment";
 
-export const userFixture = fixture({
-  create(ctx) {
+export const { fixture, combine, execute } = fluse({
+  plugins: {
+    faker: fakerPlugin(),
+    orm: typeormPlugin(),
+  },
+});
+
+export const userFixture = fixture<User>({
+  create({ orm, faker }) {
     const user = new User({
-      firstName: ctx.faker.name.firstName(),
-      lastName: ctx.faker.name.lastName(),
-      phone: ctx.faker.phone.phoneNumber(),
-      country: ctx.faker.address.countryCode(),
-      email: ctx.faker.internet.email(),
+      firstName: faker.name.firstName(),
+      lastName: faker.name.lastName(),
+      phone: faker.phone.phoneNumber(),
+      country: faker.address.countryCode(),
+      email: faker.internet.email(),
     });
-    return user;
+
+    return orm.entityManager.save(user);
   },
 });
 
-type PostArgs = {
+interface CommentArgs {
   author: User;
-};
+}
 
-export const postFixture = fixture({
-  create(ctx, args: PostArgs) {
-    const post = new Post({
-      title: ctx.faker.lorem.words(5),
-      message: ctx.faker.lorem.words(40),
-      image: ctx.faker.image.imageUrl(),
-      author: args.author,
-    });
-
-    return post;
-  },
-});
-
-type CommentArgs = {
-  author: User;
-  post: Post;
-};
-
-export const commentFixture = fixture({
-  create(ctx, args: CommentArgs) {
+export const commentFixture = fixture<Comment, CommentArgs>({
+  create({ orm, faker }, args) {
     const comment = new Comment({
-      title: ctx.faker.lorem.words(5),
-      message: ctx.faker.lorem.words(40),
+      message: faker.lorem.slug(),
       author: args.author,
-      post: args.post,
     });
 
-    return comment;
+    return orm.entityManager.save(comment);
+  },
+});
+
+interface PostArgs {
+  author: User;
+  comments: Comment[];
+}
+
+export const postFixture = fixture<Post, PostArgs>({
+  create({ orm, faker }, args) {
+    const post = new Post({
+      title: faker.lorem.slug(),
+      body: faker.lorem.paragraphs(4),
+      author: args.author,
+    });
+
+    if (args.comments.length) {
+      args.comments.forEach((comment) => {
+        post.addComment(comment);
+      });
+    }
+
+    return orm.entityManager.save(post);
   },
 });
 ```
 
-Let's recap quickly what we've done here. We created 3 `fixtures`:
+After some initial configuration of [plugins](./plugin-introduction.md) the **first step** of Fluse's workflow is to define **fixture definitions**. These definitions will be our primitive building blocks.
 
-- a `userFixture` to create a random user
-- a `postFixture` to create random post, for a given `author`
-- a `commentFixture` to create random comment, for a given `author` and `post`
+:::note
+Fluse is able to integrate with your favorite libraries by using plugins. In this example we configured a Faker plugin and a TypeORM plugin.
+:::
 
 Now let's go back to our test:
 
 ```typescript
-// getMostUpvotedComment.test.ts
-import { createExecutor, combine } from "fluse";
-import fakerPlugin from "fluse-plugin-faker";
-import { userFixture, postFixture, commentFixture } from "./entities/fixtures";
+// getPostsByCommentCount.test.ts
+import {
+  execute,
+  userFixture,
+  postFixture,
+  commentFixture,
+} from "./entities/fixtures";
 
-const execute = createExecutor({ plugins: [fakerPlugin()] });
+const scenario = combine()
+  .and(userFixture("bob"))
+  .and(userFixture("alice"))
+  .and(({ bob }) =>
+    postFixture("bobsPost", {
+      args: {
+        author: bob,
+        comments: commentFixture.asArg({
+          list: 10,
+          args: {
+            author: userFixture.asArg(),
+          },
+        }),
+      },
+    })
+  )
+  .and(({ alice }) =>
+    postFixture("alicesPosts", {
+      args: {
+        author: alice,
+        comments: commentFixture.asArg({
+          list: 5,
+          args: {
+            author: userFixture.asArg(),
+          },
+        }),
+      },
+    })
+  )
+  .toFixture();
 
-it("should return the most upvoted comment", async () => {
-  const scenario = combine()
-    .and(userFixture("bob"))
-    .and(userFixture("alice"))
-    .and(({ bob }) => postFixture("bobsPost", { args: { author: bob } }))
-    .and(({ alice, bobsPost }) =>
-      commentFixture("alicesComments", {
-        list: 10,
-        args: { author: alice, post: bobsPost },
-      })
-    )
-    .toFixture();
+it("should return the posts ordered by their comment count (desc)", async () => {
+  const { bobsPosts, alicesPosts } = await execute(scenario);
 
-  const { alicesComments } = await execute(scenario);
+  const actual = await getPostsByCommentCount();
 
-  // Upvote the first comment twice.
-  alicesComments[0].upvote();
-  alicesComments[0].upvote();
-
-  const actual = getMostUpvotedComment(alicesComments);
-
-  expect(actual).toBe(alicesComments[0]);
+  expect(actual[0].id).toBe(bobsPost.id);
+  expect(actual[1].id).toBe(alicesPost.id);
 });
 ```
 
-Let's recap what we've done to our test.
+The previously large chunk of imperative code has been replaced with a **declarative scenario**.
 
-We **combined** our previously created fixtures into a new fixture `scenario`. This is the input data we are testing against:
+The scenario is built by composing our fixture definitions together. Notice how:
 
-- A user Bob with one post
-- A user Alice who made 10 comments on Bob's post
+- The scenario is **declarative** by nature and can be **re-used**,
+- The scenario is **type-safe**,
+- The scenario has references to **named** objects that we chose on the spot,
+- We can go from a single entity to a list of entities by simply refering to it as a `list`,
+- We can re-use fixture definitions in a **nested** way (i.e. to create a random user per comment),
+- We can use libraries like Faker and TypeORM by configuring them upfront in the form of **plugins**
 
-It's actually the same data set as the first test. The difference between this and the previous test is that we are only specifing the relationships which we are interested in.
-
-Notice how our test got a lot less cluttered with setting up all this random data. As a bonus the fixtures we created are also re-usable for any other test.
-
-Find out more about what you can do with fixtures such as:
+Find out more about what you can do with Fluse such as:
 
 - [Supplying arguments](./supplying-arguments.md)
-- [Making lists](./making-lists.md)
-- [Accessing context](./context.md)
+- [Lists](./making-lists.md)
 - [Combining fixtures](./combining-fixtures.md)
+- [Plugins](./plugin-introduction.md)

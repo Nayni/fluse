@@ -9,22 +9,31 @@ module.exports = {
       type: "category",
       label: "Fundamentals",
       items: [
-        "fixture-name",
+        "initialize",
+        "define-fixture",
+        "execute",
         "supplying-arguments",
         "making-lists",
         "combining-fixtures",
-        "context",
       ],
     },
     {
       type: "category",
       label: "API Reference",
-      items: ["api-fixture", "api-combine", "api-execute"],
+      items: ["api-fluse", "api-fixture", "api-combine", "api-execute"],
     },
     {
       type: "category",
       label: "Plugins",
-      items: ["plugin-faker", "plugin-typeorm", "plugin-slonik"],
+      items: [
+        "plugin-introduction",
+        "create-plugin",
+        {
+          type: "category",
+          label: "Official plugins",
+          items: ["plugin-faker", "plugin-typeorm", "plugin-slonik"],
+        },
+      ],
     },
   ],
 };

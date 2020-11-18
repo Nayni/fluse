@@ -1,4 +1,4 @@
-import { PluginFn } from "fluse";
+import { createPlugin } from "fluse";
 import {
   Connection,
   createConnection,
@@ -7,74 +7,61 @@ import {
   getConnectionManager,
 } from "typeorm";
 
-type TypeORMPluginConfig = {
-  connection: Connection | string;
+export interface TypeORMPluginOptions {
+  connection?: Connection | string;
   transaction?: boolean;
   synchronize?: boolean;
   dropBeforeSync?: boolean;
-};
-
-type TypeORMContext = {
-  connection: Connection;
-  entityManager: EntityManager;
-};
-
-declare module "fluse" {
-  interface FixtureContext {
-    typeorm: TypeORMContext;
-  }
 }
 
-const plugin: PluginFn<TypeORMPluginConfig> = (config = {}) => {
-  const {
-    connection = "default",
-    transaction = true,
-    synchronize = false,
-    dropBeforeSync = false,
-  } = config;
+export interface TypeORMContext {
+  connection: Connection;
+  entityManager: EntityManager;
+}
 
-  const getOrCreateConnection = async () => {
-    if (connection instanceof Connection) {
-      return connection;
-    }
-    if (getConnectionManager().has(connection)) {
-      return getConnection(connection);
-    }
-
-    return await createConnection(connection);
-  };
-
-  return {
+function typeORMPlugin(defaultOptions?: TypeORMPluginOptions) {
+  return createPlugin<TypeORMContext, TypeORMPluginOptions>({
     name: "typeorm",
     version: "0.x",
-    async onBefore() {
-      if (synchronize) {
-        const connection = await getOrCreateConnection();
-        await connection.synchronize(dropBeforeSync);
+    async execute(next, runtimeOptions) {
+      const options: TypeORMPluginOptions = {
+        ...defaultOptions,
+        ...runtimeOptions,
+      };
+
+      const connection = await getOrCreateConnection(options);
+
+      if (options.synchronize) {
+        await connection.synchronize(options.dropBeforeSync);
+      }
+
+      if (options.transaction) {
+        return connection.transaction((entityManager) => {
+          return next({
+            connection,
+            entityManager,
+          });
+        });
+      } else {
+        const entityManager = connection.createEntityManager();
+        return next({
+          connection,
+          entityManager,
+        });
       }
     },
-    onCreateExecutor() {
-      return async (fixture, next) => {
-        const connection = await getOrCreateConnection();
+  });
+}
 
-        if (transaction) {
-          return connection.transaction(async (entityManager) => {
-            const result = await next(fixture, {
-              connection,
-              entityManager,
-            });
-            return result;
-          });
-        } else {
-          const result = await next(fixture, {
-            connection,
-            entityManager: connection.createEntityManager(),
-          });
-          return result;
-        }
-      };
-    },
-  };
-};
+function getOrCreateConnection({ connection }: TypeORMPluginOptions) {
+  if (connection instanceof Connection) {
+    return Promise.resolve(connection);
+  }
+  if (getConnectionManager().has(connection ?? "default")) {
+    return Promise.resolve(getConnection(connection));
+  }
 
-export default plugin;
+  return createConnection(connection ?? "default");
+}
+
+export default typeORMPlugin;

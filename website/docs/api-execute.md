@@ -1,40 +1,52 @@
 ---
 id: api-execute
-title: createExecutor()
-sidebar_label: createExecutor()
+title: execute()
+sidebar_label: execute()
 ---
 
-`createExecutor()` creates an executor which allows you to run any particular fixture, this can be a single fixture or a combined fixture.
+Executes a fixture definition or scenario.
 
 ## Signature
 
 ```
-createExecutor(options?: {
-  plugins?: Plugin[]
-}) => (fixture: Fixture<TResult>) => Promise<TResult>
+execute(
+  fixture: Fixture<TResult>,
+  options?: { [key: string]: PluginOptions }
+) => Promise<TResult>
 ```
 
-- `options` **(optional)**: Additional options including:
-  - `plugins` **(optional)**: A set of plugins to use while executing.
-- `fixture` **(required)**: The fixture to execute, created by either [fixture()](./api-fixture.md) or by [combine()](./api-combine.md).
+- `fixture` **(required)**: A [fixture definition](./api-fixture.md) or [scenario](./api-combine.md),
+- `options` **(optional)**: Runtime options for the configured plugins,
 
 ## Example
 
 ```typescript
-import { createExecutor, fixture } from "fluse";
+import { fluse } from "fluse";
+import typeormPlugin from "fluse-plugin-typeorm";
 
-const execute = createExecutor({
-  plugins: [
-    /* pass plugins */
-  ],
-});
-
-const fooFixture = fixture({
-  create() {
-    return new Foo();
+const { fixture, combine, execute } = fluse({
+  plugins: {
+    orm: typeormPlugin(),
   },
 });
 
-const { foo } = await execute(fooFixture("foo"));
-const { manyFoos } = await execute(fooFixture("manyFoos", { list: 10 }));
+const scenario = combine()
+  .and(userFixture("bob"))
+  .and(({ bob }) =>
+    postFixture("bobsPosts", {
+      list: 5,
+      args: {
+        author: bob,
+      },
+    })
+  )
+  .toFixture();
+
+// without runtime options
+const { bob, bobsPosts } = await execute(scenario);
+
+// with runtime options
+const { alice } = await execute(userFixture("alice"), {
+  orm: { connection: "default" },
+});
 ```

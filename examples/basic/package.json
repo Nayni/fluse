@@ -1,0 +1,44 @@
+{
+  "name": "fluse-example-basic",
+  "description": "A basic example of fluse",
+  "version": "0.0.1",
+  "private": "true",
+  "main": "dist/index.js",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Nayni/fluse.git"
+  },
+  "scripts": {
+    "lint": "eslint . --ext .ts",
+    "start": "jest",
+    "precommit": "lint-staged"
+  },
+  "dependencies": {
+    "faker": "^5.1.0",
+    "fluse": "^0.5.0",
+    "jest": "26.6.1",
+    "jest-circus": "26.6.1",
+    "jest-environment-node": "26.6.1",
+    "ts-jest": "26.4.3"
+  },
+  "devDependencies": {
+    "@types/faker": "4.1.12",
+    "@types/jest": "26.0.15",
+    "@typescript-eslint/eslint-plugin": "3.10.1",
+    "@typescript-eslint/parser": "3.10.1",
+    "eslint": "7.7.0",
+    "eslint-config-fluse": "^1.0.2",
+    "fluse-prettier-config": "1.0.1",
+    "lint-staged": "10.2.13",
+    "prettier": "2.1.1",
+    "ts-node": "9.0.0",
+    "typescript": "4.0.2"
+  },
+  "lint-staged": {
+    "src/**/*.ts": [
+      "eslint --max-warnings=0",
+      "prettier --write"
+    ]
+  }
+}

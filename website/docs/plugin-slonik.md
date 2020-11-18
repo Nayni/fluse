@@ -43,42 +43,41 @@ This plugin requires `slonik` to be installed as well.
 ## Example
 
 ```typescript
-import { createExecutor, fixture } from "fluse";
+import { fluse } from "fluse";
 import { createPool, sql } from "slonik";
 import slonikPlugin from "fluse-plugin-slonik";
 
 const pool = createPool("postgres://");
-const execute = createExecutor({
-  plugins: [slonikPlugin({ pool })],
-});
 
-const fooFixture = fixture({
-  async create(ctx) {
-    const foo = { name: "bar" };
-    await ctx.slonik.query(sql`INSERT INTO foo ("name") VALUES (${foo.name})`);
-    return foo;
+const { fixture, combine, execute } = fluse({
+  plugins: {
+    slonik: slonikPlugin({ pool }),
   },
 });
 
-const result = await execute(fooFixture("foo"));
+const userFixture = fixture<User>({
+  async create({ slonik }) {
+    const result = await slonik.query<User>(
+      sql`INSERT INTO users ("user_name") VALUES ('bob') RETURNING *`
+    );
+
+    return result.rows[0];
+  },
+});
 ```
 
 ## API Reference
 
-The `slonik` key will become available on the [context](./context.md) as you use this plugin.
+The `slonik` api will become available on the [context](./plugin-introduction.md) and a runtime option as you use this plugin.
 
 ### Signature
 
 ```
-slonikPlugin(config?: {
+slonikPlugin(options?: {
   pool: DatabasePoolType;
   transaction?: boolean;
-  onBefore?: (pool: DatabasePoolType) => Promise<void>;
-  onAfter?: (pool: DatabasePoolType) => Promise<void>;
 }) => Plugin
 ```
 
-- `pool` **(required)**: The slonik connection pool.
-- `transaction` **(optional)**: Run the fixture (or combined fixtures) in a single transaction, rolling back if something fails.
-- `onBefore` **(optional)**: Function to run before fixtures are executed.
-- `onAfter` **(optional)**: Function to run after fixtures are executed.
+- `pool` **(required)**: The slonik connection pool,
+- `transaction` **(optional)**: Run in a single transaction, rolling back if something fails,

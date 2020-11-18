@@ -4,7 +4,7 @@ title: combine()
 sidebar_label: combine()
 ---
 
-`combine()` is a builder function that allows you to combine multiple single fixtures into a bigger fixture.
+Combines multiple fixture definitions into a scenario.
 
 ## Signature
 
@@ -38,42 +38,17 @@ toFixture() => Fixture<TFixtures>;
 ## Example
 
 ```typescript
-import { fixture, combine } from "fluse";
-import { User } from "./entities/User";
-import { Post } from "./entities/Post";
-
-type UserFixtureArgs = {
-  username: string;
-};
-
-const userFixture = fixture({
-  create(ctx, args: UserFixtureArgs) {
-    const user = new User({ username: args.username });
-    return user;
-  },
-});
-
-type PostFixtureArgs = {
-  author: User;
-};
-
-const postFixture = fixture({
-  create(ctx, args: PostFixtureArgs, info) {
-    const post = new Post({
-      title: `post ${info.list.index}`,
-      author: args.author,
-    });
-    return post;
-});
-
-const bobWithPosts = combine()
-  .and(userFixture("bob", { args: { username: "Bob" } }))
-  .and(({ bob }) => postFixture("bobsPosts", { list: 10, args: { author: bob } }))
+const scenario = combine()
+  .and(userFixture("bob"))
+  .and(({ bob }) =>
+    postFixture("bobsPosts", {
+      list: 5,
+      args: {
+        author: bob,
+      },
+    })
+  )
   .toFixture();
 
-const execute = createExecutor();
-const result = await execute(bobWithPosts);
-
-result.bob // User
-result.bobsPosts // Post[]
+const { bob, bobsPosts } = await execute(scenario);
 ```

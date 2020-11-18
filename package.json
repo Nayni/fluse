@@ -3,11 +3,8 @@
   "private": true,
   "workspaces": {
     "packages": [
-      "packages/*"
-    ],
-    "nohoist": [
-      "**/typeorm/**",
-      "**/typeorm"
+      "packages/*",
+      "examples/*"
     ]
   },
   "scripts": {

@@ -1,112 +1,117 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-
 import _ from "lodash";
-import { Fixture } from "./fixture";
-import { isDefined, MaybePromise } from "./utils";
+import semver from "semver";
+import { ExcludeKeysByValue, isDefined, MaybePromise } from "./utils";
 
-export type Executor<T = any, TContext = any> = (
-  /** The fixture being created. */
-  fixture: Fixture<T>,
-  /** The context of the executor. */
-  context?: TContext
-) => Promise<T>;
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const packageJson = require("../package.json");
 
-/** A fixture execute middleware. */
-export type ExecutorMiddlewareFn = (
-  /** The fixture being created. */
-  fixture: Fixture<any>,
-  /** The next middleware function. */
-  next: Executor
-) => Promise<any>;
+export const EMPTY_CONTEXT = Symbol.for("FLUSE_EMPTY_CONTEXT");
+export const EMPTY_OPTIONS = Symbol.for("FLUSE_EMPTY_OPTIONS");
 
-/** Definition of a plugin */
-export type PluginFn<TConfig = any> = (
-  config?: Partial<TConfig>
-) => {
-  /** Name of the plugin. */
+export type EmptyContext = typeof EMPTY_CONTEXT;
+export type EmptyOptions = typeof EMPTY_OPTIONS;
+
+export type FixtureResolver<TContext, TResult = any> = (
+  context: TContext
+) => Promise<TResult>;
+
+export type PluginMiddlewareNextFn<
+  TContext,
+  TResult = any
+> = TContext extends EmptyContext
+  ? () => Promise<TResult>
+  : (context: TContext) => Promise<TResult>;
+
+export type PluginMiddlewareFn<
+  TContext,
+  TOptions,
+  TResult = any
+> = TOptions extends EmptyOptions
+  ? (next: PluginMiddlewareNextFn<TContext, TResult>) => Promise<TResult>
+  : (
+      next: PluginMiddlewareNextFn<TContext, TResult>,
+      options: TOptions
+    ) => Promise<TResult>;
+
+export type PluginContextFactory<TContext = any> = () => MaybePromise<TContext>;
+
+export interface Plugin<TContext, TOptions> {
   name: string;
-  /** Version compatibility of the plugin. */
   version: string;
-  /** Middleware function creating the execute context of the plugin. */
-  onCreateExecutor?: () => ExecutorMiddlewareFn;
-  /** Hook called before fixtures are executed. */
-  onBefore?: () => MaybePromise<void>;
-  /** Hook called after fixtures are executed. */
-  onAfter?: () => MaybePromise<void>;
+  execute: PluginMiddlewareFn<TContext, TOptions>;
+}
+
+export interface PluginDefinition<TContext, TOptions> {
+  name: string;
+  version: string;
+  execute: PluginMiddlewareFn<TContext, TOptions>;
+}
+
+export type PluginConfig = Record<string, Plugin<any, any>>;
+
+export type RootContextMap<TPluginConfig extends PluginConfig> = {
+  [K in keyof TPluginConfig]: Parameters<
+    Parameters<TPluginConfig[K]["execute"]>[0]
+  >[0];
 };
 
-export type Plugin = ReturnType<PluginFn>;
+export type RootContext<TPluginConfig extends PluginConfig> = {
+  [K in ExcludeKeysByValue<
+    RootContextMap<TPluginConfig>,
+    undefined
+  >]: RootContextMap<TPluginConfig>[K];
+};
 
-export function isExecutorMiddlewareFn(
-  value: any
-): value is ExecutorMiddlewareFn {
-  return !_.isNil(value) && _.isFunction(value);
+export type RootOptionsMap<TPluginConfig extends PluginConfig> = {
+  [K in keyof TPluginConfig]: Parameters<TPluginConfig[K]["execute"]>[1];
+};
+
+export type RootOptions<TPluginConfig extends PluginConfig> = {
+  [K in ExcludeKeysByValue<
+    RootOptionsMap<TPluginConfig>,
+    undefined
+  >]?: RootOptionsMap<TPluginConfig>[K];
+};
+
+export function createPlugin<TContext, TOptions = EmptyOptions>(
+  definition: PluginDefinition<TContext, TOptions>
+): Plugin<TContext, TOptions> {
+  return definition;
 }
 
-export function composePluginExecutorMiddlewares<T>(
-  plugins: Plugin[],
-  executor: Executor<T>
-) {
-  let lastExecutor: Executor<any> = executor;
-  for (const plugin of plugins.reverse()) {
-    if (
-      _.isNil(plugin.onCreateExecutor) ||
-      !_.isFunction(plugin.onCreateExecutor)
-    ) {
-      continue;
+export function validatePlugins(plugins: PluginConfig) {
+  _.forEach(plugins, (plugin, key) => {
+    if (!semver.satisfies(packageJson.version, plugin.version)) {
+      throw new Error(
+        `Plugin version (${plugin.version}) of '${plugin.name}' (${key}) is not compatible with this version (${packageJson.version}) of fluse.`
+      );
     }
+  });
+}
 
-    const middleware = plugin.onCreateExecutor();
+export function composeMiddlewares<TContext>(
+  plugins: PluginConfig,
+  pluginOptions: RootOptions<PluginConfig>,
+  resolver: FixtureResolver<TContext, any>
+): FixtureResolver<TContext, any> {
+  let lastResolver = resolver;
+  for (const key of Object.keys(plugins).reverse()) {
+    const plugin = plugins[key];
+    const options = pluginOptions[key];
 
-    if (!isExecutorMiddlewareFn(middleware)) {
-      continue;
-    }
-
-    const currentNext = middleware;
-    const previousNext = lastExecutor;
-    lastExecutor = (fixture, previousContext) => {
-      // The idea here is that plugins create their own sub-context and pass it to the next function.
-      // This allows plugins to execute and create their stuff in an isolated way.
-      // We then aggregate all these sub-context's into a big context object that is passed to the final fixture creator.
-      // All the sub-context's go on a key named after the plugin's name.
-      // However I think this need improvements still...
-      return currentNext(fixture, (fixture, ctx) => {
-        if (isDefined(ctx)) {
-          if (!_.isObject(ctx)) {
-            throw new Error(
-              "An unexpected error occured while executing fixture combination: " +
-                `A plugin (${plugin.name}) has passed in an invalid context object.`
-            );
-          }
-
-          previousContext[plugin.name] = ctx;
+    const currentNext = plugin.execute;
+    const previousNext = lastResolver;
+    lastResolver = (rootContext) => {
+      return currentNext((pluginContext) => {
+        if (isDefined(pluginContext)) {
+          (rootContext as any)[key] = pluginContext;
         }
 
-        return previousNext(fixture, previousContext);
-      });
+        return previousNext(rootContext);
+      }, options);
     };
   }
-  return lastExecutor as Executor<T>;
-}
 
-export function composePluginBeforeHooks(plugins: Plugin[]) {
-  return async () => {
-    for (const plugin of plugins) {
-      if (_.isNil(plugin.onBefore) || !_.isFunction(plugin.onBefore)) {
-        continue;
-      }
-      await plugin.onBefore();
-    }
-  };
-}
-
-export function composePluginAfterHooks(plugins: Plugin[]) {
-  return async () => {
-    for (const plugin of plugins) {
-      if (_.isNil(plugin.onAfter) || !_.isFunction(plugin.onAfter)) {
-        continue;
-      }
-      await plugin.onAfter();
-    }
-  };
+  return lastResolver;
 }

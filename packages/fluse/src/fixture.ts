@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import _ from "lodash";
-import { FixtureContext } from ".";
 import { FluseTypes, isFluseType, withFluseSymbol } from "./internal";
 import {
   Args,
@@ -19,27 +18,30 @@ export interface FixtureCreatorInfo {
   };
 }
 
-type FixtureCreator<TResult, TArgs> = (
-  context: FixtureContext,
+export type FixtureCreator<TContext, TResult, TArgs> = (
+  context: TContext,
   args: TArgs,
   info: FixtureCreatorInfo
 ) => MaybePromise<TResult>;
 
-interface FixtureDefinition<TResult, TArgs> {
-  create: FixtureCreator<TResult, TArgs>;
+export interface FixtureDefinition<TContext, TResult, TArgs> {
+  create: FixtureCreator<TContext, TResult, TArgs>;
 }
 
-type FixtureFactoryOptions<TArgs> = Args<TArgs> & {
+export type FixtureFactoryOptions<TArgs> = Args<TArgs> & {
   list?: number | false;
 };
 
-type HasList<TOptions> = TOptions extends { list: number } ? true : false;
+export type HasList<TOptions> = TOptions extends { list: number }
+  ? true
+  : false;
 
-interface FixtureFactoryWithOptionalArgs<TResult, TArgs> {
+export interface FixtureFactoryWithOptionalArgs<TContext, TResult, TArgs> {
   <TName extends string, TOptions extends FixtureFactoryOptions<TArgs>>(
     name: TName,
     options?: TOptions
   ): Fixture<
+    TContext,
     {
       [K in TName]: HasList<TOptions> extends true ? TResult[] : TResult;
     }
@@ -50,11 +52,12 @@ interface FixtureFactoryWithOptionalArgs<TResult, TArgs> {
   ): HasList<TOptions> extends true ? TResult[] : TResult;
 }
 
-interface FixtureFactoryWithRequiredArgs<TResult, TArgs> {
+export interface FixtureFactoryWithRequiredArgs<TContext, TResult, TArgs> {
   <TName extends string, TOptions extends FixtureFactoryOptions<TArgs>>(
     name: TName,
     options: TOptions
   ): Fixture<
+    TContext,
     {
       [K in TName]: HasList<TOptions> extends true ? TResult[] : TResult;
     }
@@ -65,23 +68,23 @@ interface FixtureFactoryWithRequiredArgs<TResult, TArgs> {
   ): HasList<TOptions> extends true ? TResult[] : TResult;
 }
 
-export interface Fixture<T> {
-  create: (context: FixtureContext) => Promise<StrictlyRecord<T>>;
+export interface Fixture<TContext, TResult> {
+  create: (context: TContext) => Promise<StrictlyRecord<TResult>>;
 }
 
-type FixtureFactory<TResult, TArgs> = RequiredKeys<TArgs> extends never
-  ? FixtureFactoryWithOptionalArgs<TResult, TArgs>
-  : FixtureFactoryWithRequiredArgs<TResult, TArgs>;
+export type FixtureFactory<TContext, TResult, TArgs> = RequiredKeys<
+  TArgs
+> extends never
+  ? FixtureFactoryWithOptionalArgs<TContext, TResult, TArgs>
+  : FixtureFactoryWithRequiredArgs<TContext, TResult, TArgs>;
 
-type FixtureFn<TResult, TFixtures> = (fixtures: TFixtures) => Fixture<TResult>;
+export type FixtureFn<TContext, TResult, TFixtures> = (
+  fixtures: TFixtures
+) => Fixture<TContext, TResult>;
 
-/**
- * Defines a fixture usable by 'execute()' and 'combine()'.
- * @param definition The fixture definition.
- */
-export function fixture<TResult, TArgs = unknown>(
-  definition: FixtureDefinition<TResult, TArgs>
-): FixtureFactory<TResult, TArgs> {
+export function fixture<TContext, TResult = any, TArgs = unknown>(
+  definition: FixtureDefinition<TContext, TResult, TArgs>
+): FixtureFactory<TContext, TResult, TArgs> {
   function fixtureFactory<
     TName extends string,
     TOptions extends FixtureFactoryOptions<TArgs>
@@ -103,7 +106,7 @@ export function fixture<TResult, TArgs = unknown>(
     }
 
     const fixture = {
-      create: async (context: FixtureContext) => {
+      create: async (context: TContext) => {
         const results: TResult[] = [];
         const size = options?.list || 1;
 
@@ -144,17 +147,21 @@ export function fixture<TResult, TArgs = unknown>(
 
   withFluseSymbol(fixtureFactory, FluseTypes.FixtureFactory);
 
-  return (fixtureFactory as unknown) as FixtureFactory<TResult, TArgs>;
+  return (fixtureFactory as unknown) as FixtureFactory<
+    TContext,
+    TResult,
+    TArgs
+  >;
 }
 
-/**
- * Checks whether value is a fixture.
- */
-export function isFixture(value: any): value is Fixture<any> {
+export function isFixture(value: any): value is Fixture<any, any> {
   return isDefined(value) && isFluseType(value, FluseTypes.Fixture);
 }
 
-export async function unwrapArgs<TArgs>(args: TArgs, context: FixtureContext) {
+export async function unwrapArgs<TContext, TArgs>(
+  args: TArgs,
+  context: TContext
+) {
   const unwrappedArgs: Record<any, any> = {};
 
   for (const argKey of keysOf(args)) {
@@ -175,16 +182,16 @@ export async function unwrapArgs<TArgs>(args: TArgs, context: FixtureContext) {
  * Builder API to create a combined fixture using multiple single fixtures.
  */
 // eslint-disable-next-line @typescript-eslint/ban-types
-export class CombinedFixtureBuilder<TFixtures extends {} = {}> {
-  constructor(private fixtureFns: FixtureFn<any, any>[] = []) {}
+export class CombinedFixtureBuilder<TContext, TFixtures extends {} = {}> {
+  constructor(private fixtureFns: FixtureFn<TContext, any, any>[] = []) {}
 
   /**
    * Adds a single fixture to the combined result.
    * @param fixture The fixture to add to the combined result.
    */
   and<TResult>(
-    fixture: Fixture<TResult>
-  ): CombinedFixtureBuilder<TFixtures & TResult>;
+    fixture: Fixture<TContext, TResult>
+  ): CombinedFixtureBuilder<TContext, TFixtures & TResult>;
 
   /**
    * Adds a fixture function to the combined result.
@@ -192,13 +199,15 @@ export class CombinedFixtureBuilder<TFixtures extends {} = {}> {
    * @param fixtureFn The function creating a fixture.
    */
   and<TResult>(
-    fixtureFn: FixtureFn<TResult, TFixtures>
-  ): CombinedFixtureBuilder<TFixtures & TResult>;
+    fixtureFn: FixtureFn<TContext, TResult, TFixtures>
+  ): CombinedFixtureBuilder<TContext, TFixtures & TResult>;
 
   and<TResult>(
-    fixtureOrFixtureFn: Fixture<TResult> | FixtureFn<TResult, TFixtures>
-  ): CombinedFixtureBuilder<TFixtures & TResult> {
-    return new CombinedFixtureBuilder<TFixtures & TResult>([
+    fixtureOrFixtureFn:
+      | Fixture<TContext, TResult>
+      | FixtureFn<TContext, TResult, TFixtures>
+  ): CombinedFixtureBuilder<TContext, TFixtures & TResult> {
+    return new CombinedFixtureBuilder<TContext, TFixtures & TResult>([
       ...this.fixtureFns,
       _.isFunction(fixtureOrFixtureFn)
         ? fixtureOrFixtureFn
@@ -209,9 +218,9 @@ export class CombinedFixtureBuilder<TFixtures extends {} = {}> {
   /**
    * Creates a new single fixture of the combined result, can be consumed by 'execute()'.
    */
-  toFixture(): Fixture<TFixtures> {
+  toFixture(): Fixture<TContext, TFixtures> {
     const fixture = {
-      create: async (context: FixtureContext) => {
+      create: async (context: TContext) => {
         const fixtures: Record<string, any> = {};
         for (const fixtureFn of this.fixtureFns) {
           const fixture = fixtureFn(fixtures);
@@ -247,12 +256,4 @@ export class CombinedFixtureBuilder<TFixtures extends {} = {}> {
 
     return fixture;
   }
-}
-
-/**
- * Combine a series of fixtures into a single new fixture.
- * Use the 'and()' method to chain multiple fixtures.
- */
-export function combine() {
-  return new CombinedFixtureBuilder();
 }

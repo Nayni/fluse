@@ -1,55 +1,44 @@
-import { PluginFn } from "fluse";
+import { createPlugin } from "fluse";
 import { CommonQueryMethodsType, DatabasePoolType } from "slonik";
 
-type SlonikContext = CommonQueryMethodsType;
+export type SlonikContext = CommonQueryMethodsType;
 
-type SlonikPluginConfig = {
+export type SlonikPluginOptions = {
   pool: DatabasePoolType;
   transaction?: boolean;
-  onBefore?: (pool: DatabasePoolType) => Promise<void>;
-  onAfter?: (pool: DatabasePoolType) => Promise<void>;
 };
 
-declare module "fluse" {
-  interface FixtureContext {
-    slonik: SlonikContext;
-  }
-}
-
-const plugin: PluginFn<SlonikPluginConfig> = (config = {}) => {
-  const { pool, transaction = true, onBefore, onAfter } = config;
-
-  if (!pool) {
-    throw new Error("Pool should be initialized.");
-  }
-
-  return {
+function slonikPlugin(defaultOptions?: SlonikPluginOptions) {
+  return createPlugin<SlonikContext, SlonikPluginOptions>({
     name: "slonik",
     version: "0.x",
-    async onBefore() {
-      if (onBefore) {
-        await onBefore(pool);
-      }
-    },
-    async onAfter() {
-      if (onAfter) {
-        await onAfter(pool);
-      }
-    },
-    onCreateExecutor() {
-      return async (fixture, next) => {
-        if (transaction) {
-          return pool.transaction(async (trx) => {
-            const result = await next(fixture, trx);
-            return result;
-          });
-        } else {
-          const result = await next(fixture, pool);
-          return result;
-        }
+    execute(next, runtimeOptions) {
+      const options: SlonikPluginOptions = {
+        ...defaultOptions,
+        ...runtimeOptions,
       };
-    },
-  };
-};
 
-export default plugin;
+      const pool = getPool(options);
+
+      if (options.transaction) {
+        return pool.transaction((trx) => {
+          return next(trx);
+        });
+      } else {
+        return next(pool);
+      }
+    },
+  });
+}
+
+function getPool(options: SlonikPluginOptions) {
+  if (!options.pool) {
+    throw new Error(
+      "An error occured in 'fluse-plugin-slonik': Pool should be initialized."
+    );
+  }
+
+  return options.pool;
+}
+
+export default slonikPlugin;
