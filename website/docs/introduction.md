@@ -5,26 +5,30 @@ sidebar_label: Introduction
 slug: /
 ---
 
-Fluse is a data-fixture builder. It allows you to build up fixtures in a composable and type-safe way.
+Fluse is a data-fixture builder. It allows you to build up fixtures in a **declarative**, **composable** and **type-safe** way.
 
 ## Why Fluse?
 
-Testing your application or business logic requires input data, as applications grow in complexity providing that input data becomes more and more challenging:
+Testing an application requires data, more specifically it requires data in certain states.
 
-- entities become interconnected
-- getting an entity into a specific state for testing requires a (large) series of steps
-- your logic might be tightly coupled to a database or ORM solution requiring you to persist it first (i.e. generating ids)
+In almost every project I've worked on, creating test data would result in a combination of the following approaches:
 
-When trying to maintain this type of code there tends to be two common approaches:
+- Inline entity creation (i.e.: `new User()`),
+- Custom utility functions to make large sets of data
+- External pacakges like `faker` to generate randomness
+- Abusing the built-in ORM solutions like migrations to seed databases while testing
 
-- write a lot of custom code to create fixtures, writing this code is tedious and maintaining it is even worse
-- try to leverage the built-in ORM's solution of seeding the database. This solution usually boils down to abusing the migrations system and starts to fall short when you intensively use this data in your tests
+Sadly these solutions don't scale well and as time passes this quickly results in chaos.
 
-Fluse is a tool specifically designed to help you in making **re-usable** and **type-safe** data fixtures. It allows you to define **small** and **composable** building blocks for creating test data.
+Testing an application should be easy. This starts with generating test data for your application models. Fluse brings you a slightly opinionated way of creating test data using fixtures and in return gives you a toolbelt that consists of:
 
-Fluse's sole focus is to help you create test data and doesn't tie itself to any ORM or database solution. You can however still connect Fluse to your ORM or database of choice by using one of our [official plugins](./context.md).
+- A unified way of defining fixtures
+- A declarative scenario builder, composing fixtures together
+- Built-in supprt for [lists](./making-lists.md) and deeply nested structures
+- Type-safety all the way through
+- Extensions in the form of [plugins](./context.md).
 
-This might still sound a little vague so let's give you an example!
+This might all still sound a little vague so let me give you an example!
 
 ## Example case: The blog
 
@@ -150,7 +154,7 @@ However, the attentive reader might consider:
 - I could refactor this setup code into its own function making the test itself less cluttered
 - I could refactor so the database becomes a dependency of my setup code
 
-This is exactly why I created Fluse. I kept noticing that in every project I would end up doing the same things over and over when it comes to setting up test data: I craft utility functions and functions that are specific for a single scenario within my domain model.
+This is true and is exactly why I created Fluse. I kept noticing that in every project I would end up doing the same things over and over when it comes to setting up test data: I craft utility functions and functions that are specific for a single scenario within my domain model.
 
 The reality however ends up being a mixed bag of inline entity creations, scenarios and utility functions.
 
@@ -171,12 +175,7 @@ import { Post } from "./entities/Post";
 export const { fixture, combine, execute } = fluse({
   plugins: {
     faker: fakerPlugin(),
-    orm: typeormPlugin({
-      connection: "default",
-      synchronize: true,
-      dropBeforeSync: true,
-      transaction: true,
-    }),
+    orm: typeormPlugin(),
   },
 });
 

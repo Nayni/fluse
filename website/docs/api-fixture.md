@@ -14,7 +14,7 @@ fixture<TResult, TArgs>(config: {
 }) => FixtureFactory<TResult, TArgs>
 ```
 
-- `create` **(required)**: The function used to create the fixture's data set. The function receives a [context](./context.md) and optionally some typed [arguments](./supplying-arguments.md), you can also access extra info such as list info in cases where the fixture is [created as a list](./making-lists.md).
+- `create` **(required)**: The function used to create the fixture's data set. The function receives a [context](./plugin-introduction.md) and optionally some typed [arguments](./supplying-arguments.md), you can also access extra info such as list info in cases where the fixture is [created as a list](./making-lists.md).
 
 ## Example
 

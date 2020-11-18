@@ -1,37 +1,57 @@
 ---
 id: making-lists
-title: Making lists
-sidebar_label: Making lists
+title: Lists
+sidebar_label: Lists
 ---
 
-Whenever you've defined a fixture for a single item you can instantly start using it to make lists as well. Fluse provides a simple `list` option to convert your fixture into a list by calling it multiple times and accumulating the results into an array.
+Once you have a fixture definition for a single model, you can easily let Fluse create a list of them by using the `list` option.
 
 ```typescript
-import { fixture } from "fluse";
-import { Post } from "./entities/Post";
+it("should make a list", async () => {
+  const { users } = await execute(userFixture("users", { list: 10 }));
+});
+```
 
-const postFixture = fixture({
-  async create(ctx, args, info) {
-    const post = new Post({ title: `title-${info.list.index}` });
+The above example will execute the `userFixture` 10 times and accumulate the results into an array named `users`.
+
+When working with lists you can also gain information regarding the list execution inside your fixture definition.
+
+```typescript
+export const postFixture = fixture<Post, PostArgs>({
+  create(context, args, info) {
+    const post = new Post({
+      title: `title-${info.list.index}`,
+    });
+
     return post;
   },
 });
 ```
 
-In the example above we've defined a fixture for a single post. Notice how we access the third argument of the `create` function which is additional info such as list options. These options include:
+The third argument of the `create` function of the definition is an info object which contains a `list` key. This key contains the following information:
 
-- `index`: the current index that is being created.
-- `size`: the total size of the list that was configured (at consume time).
+- `index`: the current index of the item in the list,
+- `size`: the total size of the list,
 
 :::tip
-List options are also available when fixtures are just created as singles. The `index` will just be `0` and `size` will be `1`.
+List info is also available without the `list` option . The `index` will just be `0` and `size` will be `1`.
 :::
 
-We can now use this fixture and consume it as a list like so:
+Additionally list options are also available for the `asArg` static method which makes it perfect for nesting.
 
 ```typescript
-const execute = createExecutor();
-const { posts } = await execute(postFixture("posts", { list: 10 }));
+it("should work when nesting with asArg()", async () => {
+  const { posts } = await execute(
+    postFixture("posts", {
+      list: 3,
+      args: {
+        comments: commentFixture.asArg({ list: 3 }),
+      },
+    })
+  );
+});
 ```
 
-The addition of the `list: 10` option will tell Fluse to call the `postFixture` 10 times and accumulate the results into a single array named `posts`.
+:::note
+Fluse does **not** perform any optimzations for lists, it simply calls your fixture in a loop. If you need very high performance for large lists it is advisable to create a specific fixture definition for a large list.
+:::
