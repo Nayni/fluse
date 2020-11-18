@@ -4,32 +4,46 @@ title: fixture()
 sidebar_label: fixture()
 ---
 
-`fixture()` is the bread and butter of Fluse. It defines a single fixture which can be consumed directly or combined with other fixtures.
+Creates a fixture definition.
 
 ## Signature
 
 ```
 fixture<TResult, TArgs>(config: {
-  create: (context: FixtureContext, args: TArgs, info: FixtureCreatorInfo) => MaybePromise<TResult>;
+  create: (
+    context: { [key: string]: PluginContext },
+    args: TArgs,
+    info: {
+      list: {
+        index: number,
+        size: number
+      }
+    }
+  ) => MaybePromise<TResult>;
 }) => FixtureFactory<TResult, TArgs>
 ```
 
-- `create` **(required)**: The function used to create the fixture's data set. The function receives a [context](./plugin-introduction.md) and optionally some typed [arguments](./supplying-arguments.md), you can also access extra info such as list info in cases where the fixture is [created as a list](./making-lists.md).
+- `create` **(required)**: A function that defines how to create a data model. This functions receives the following arguments:
+  - `context`: The context as defined by [fluse()](./api-fluse.md),
+  - `args`: Additional [arguments](./supplying-arguments.md) as defined by the `TArgs` type,
+  - `info`: Additional info such as [list information](./making-lists.md)
 
 ## Example
 
 ```typescript
-import { fixture } from "fluse";
-import { User } from "./entities/User";
+interface PostArgs {
+  author: User;
+}
 
-type UserFixtureArgs = {
-  username: string;
-};
+export const postFixture = fixture<Post, PostArgs>({
+  create(context, args) {
+    const post = new Post({
+      title: context.faker.lorem.slug(),
+      body: context.faker.lorem.paragraphs(4),
+      author: args.author,
+    });
 
-const userFixture = fixture({
-  create(ctx, args: UserFixtureArgs, info) {
-    const user = new User({ username: args.username });
-    return user;
+    return post;
   },
 });
 ```

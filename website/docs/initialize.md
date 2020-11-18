@@ -4,9 +4,9 @@ title: Initialize
 sidebar_label: Initialize
 ---
 
-In order to gain access to the API of Fluse you have to initialize it.
+In order to gain access to the api of Fluse you have to initialize it.
 
-When you initialize Flue you also have the ability to specifiy which plugins you wish to use.
+When you initialize Fluse you also have the option to specifiy which [plugins](./plugin-introduction.md) you'd like to use.
 
 ```typescript
 import { fluse } from "fluse";

@@ -24,9 +24,9 @@ Testing an application should be easy. This starts with generating test data for
 
 - A unified way of defining fixtures
 - A declarative scenario builder, composing fixtures together
-- Built-in supprt for [lists](./making-lists.md) and deeply nested structures
+- Built-in supprt for [lists](./making-lists.md) and[ deeply nested structures](./supplying-arguments.md)
 - Type-safety all the way through
-- Extensions in the form of [plugins](./context.md).
+- Extensions in the form of [plugins](./plugin-introduction.md).
 
 This might all still sound a little vague so let me give you an example!
 
@@ -154,11 +154,11 @@ However, the attentive reader might consider:
 - I could refactor this setup code into its own function making the test itself less cluttered
 - I could refactor so the database becomes a dependency of my setup code
 
-This is true and is exactly why I created Fluse. I kept noticing that in every project I would end up doing the same things over and over when it comes to setting up test data: I craft utility functions and functions that are specific for a single scenario within my domain model.
+This is true and is exactly why I created Fluse. I kept noticing that in every project I would end up doing the same things over and over: I craft utility functions for creating single entities, lists and complex scenario's.
 
-The reality however ends up being a mixed bag of inline entity creations, scenarios and utility functions.
+The reality however ends up being a mixed bag of inline entity creations, scenario's and other utility functions.
 
-Fluse was designed to **streamline** this process and give you a slightly opinionated workflow for creating data fixtures, by following this workflow Fluse in return gives you some additional benefits such as a **declarative** scenario builder and extra **utilities** suchs as list creation and support for deeply nested structures.
+Fluse was designed to **streamline** this process and give you a slightly opinionated workflow for creating data fixtures, by following this workflow Fluse in return gives you some additional benefits such as a **declarative** scenario builder and extra **utilities** for lists and deeply nested structures.
 
 Let's re-build the example above with Fluse.
 
@@ -232,7 +232,7 @@ export const postFixture = fixture<Post, PostArgs>({
 });
 ```
 
-After some initial configuration of plugins the **first step** of Fluse's workflow is to define **fixture definitions**. These definitions will be our primitive building blocks.
+After some initial configuration of [plugins](./plugin-introduction.md) the **first step** of Fluse's workflow is to define **fixture definitions**. These definitions will be our primitive building blocks.
 
 :::note
 Fluse is able to integrate with your favorite libraries by using plugins. In this example we configured a Faker plugin and a TypeORM plugin.
@@ -301,9 +301,9 @@ The scenario is built by composing our fixture definitions together. Notice how:
 - We can re-use fixture definitions in a **nested** way (i.e. to create a random user per comment),
 - We can use libraries like Faker and TypeORM by configuring them upfront in the form of **plugins**
 
-Find out more about what you can do with fixtures such as:
+Find out more about what you can do with Fluse such as:
 
 - [Supplying arguments](./supplying-arguments.md)
-- [Making lists](./making-lists.md)
-- [Accessing context](./context.md)
+- [Lists](./making-lists.md)
 - [Combining fixtures](./combining-fixtures.md)
+- [Plugins](./plugin-introduction.md)

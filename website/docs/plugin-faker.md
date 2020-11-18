@@ -43,30 +43,32 @@ This plugin requires `faker` to be installed as well.
 ## Example
 
 ```typescript
-import { createExecutor, fixture } from "fluse";
+import { fluse } from "fluse";
 import fakerPlugin from "fluse-plugin-faker";
 
-const execute = createExecutor({
-  plugins: [fakerPlugin()],
-});
-
-const fooFixture = fixture({
-  create(ctx) {
-    const foo = new Foo();
-    foo.bar = ctx.faker.lorem.words(5);
-    return foo;
+const { fixture, combine, execute } = fluse({
+  plugins: {
+    faker: fakerPlugin(),
   },
 });
 
-const result = await execute(fooFixture("foo"));
+const userFixture = fixture<User>({
+  create({ faker }) {
+    const user = new User({
+      username: faker.internet.userName(),
+    });
+
+    return user;
+  },
+});
 ```
 
 ## API Reference
 
-The `faker` key will become available on the [context](./context.md) as you use this plugin.
+The `faker` api will become available on the [context](./plugins-introduction.md) and a runtime option as you use this plugin.
 
 ### Signature
 
 ```
-fakerPlugin() => Plugin
+fakerPlugin(options?: { faker?: FakerStatic }) => Plugin
 ```

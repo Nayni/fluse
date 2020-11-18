@@ -43,8 +43,13 @@ yarn add -D fluse
 
 ```typescript
 import { fluse } from "fluse";
+import fakerPlugin from "fluse-plugin-faker";
 
-export const { fixture, combine, execute } = fluse();
+export const { fixture, combine, execute } = fluse({
+  plugins: {
+    faker: fakerPlugin(),
+  },
+});
 ```
 
 ### 3. Define some data fixtures for your domain
@@ -55,7 +60,7 @@ import { Post } from "./model/Post";
 import { User } from "./model/User";
 
 export const userFixture = fixture<User>({
-  create() {
+  create({ faker }) {
     return new User({
       userName: faker.internet.userName(),
     });
@@ -67,7 +72,7 @@ interface CommentArgs {
 }
 
 export const commentFixture = fixture<Comment, CommentArgs>({
-  create(ctx, args) {
+  create({ faker }, args) {
     return new Comment({
       message: faker.lorem.slug(),
       author: args.author,
@@ -77,11 +82,11 @@ export const commentFixture = fixture<Comment, CommentArgs>({
 
 interface PostArgs {
   author: User;
-  comments: Comment[];
+  comments?: Comment[];
 }
 
 export const postFixture = fixture<Post, PostArgs>({
-  create(ctx, args) {
+  create({ faker }, args) {
     return new Post({
       title: faker.lorem.slug(),
       body: faker.lorem.paragraphs(4),
@@ -100,7 +105,6 @@ it("should create a single post", async () => {
     postFixture("singlePost", {
       args: {
         author: userFixture.asArg(),
-        comments: [],
       },
     })
   );
@@ -125,7 +129,7 @@ it("should create many posts", async () => {
   expect(manyPosts).toBeDefined();
 });
 
-it("should create a fixture scenario", async () => {
+it("should create a complex scenario", async () => {
   const postsFromBobAndAlice = combine()
     .and(userFixture("bob"))
     .and(userFixture("alice"))

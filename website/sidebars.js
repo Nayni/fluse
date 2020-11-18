@@ -20,7 +20,7 @@ module.exports = {
     {
       type: "category",
       label: "API Reference",
-      items: ["api-fixture", "api-combine", "api-execute"],
+      items: ["api-fluse", "api-fixture", "api-combine", "api-execute"],
     },
     {
       type: "category",

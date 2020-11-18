@@ -24,7 +24,7 @@ export const userFixture = fixture<User>({
 
 The above example shows a fixture definition for a user entity. The `create` method must be implemented and receives three arguments for you to work with:
 
-- a `context` object, this context is related to which [plugins](./context.md) you configured Fluse with,
+- a `context` object, this context is related to which [plugins](./plugin-introoduction.md) you configured Fluse with,
 - additional [arguments](./supplying-arguments.md) you may want to receive,
 - an `info` object containing information regarding [lists](./making-lists.md),
 
