@@ -7,37 +7,26 @@ import {
   getConnectionManager,
 } from "typeorm";
 
-interface TypeORMPluginConfig {
+export interface TypeORMPluginOptions {
   connection?: Connection | string;
   transaction?: boolean;
   synchronize?: boolean;
   dropBeforeSync?: boolean;
 }
 
-interface TypeORMContext {
+export interface TypeORMContext {
   connection: Connection;
   entityManager: EntityManager;
 }
 
-function typeORMPlugin(config?: TypeORMPluginConfig) {
-  function getOrCreateConnection(opts: TypeORMPluginConfig) {
-    if (opts.connection instanceof Connection) {
-      return Promise.resolve(opts.connection);
-    }
-    if (getConnectionManager().has(opts.connection ?? "default")) {
-      return Promise.resolve(getConnection(opts.connection));
-    }
-
-    return createConnection(opts.connection ?? "default");
-  }
-
-  return createPlugin<TypeORMContext, TypeORMPluginConfig>({
+function typeORMPlugin(defaultOptions?: TypeORMPluginOptions) {
+  return createPlugin<TypeORMContext, TypeORMPluginOptions>({
     name: "typeorm",
     version: "0.x",
-    async execute(next, opts) {
-      const options = {
-        ...config,
-        ...opts,
+    async execute(next, runtimeOptions) {
+      const options: TypeORMPluginOptions = {
+        ...defaultOptions,
+        ...runtimeOptions,
       };
 
       const connection = await getOrCreateConnection(options);
@@ -62,6 +51,17 @@ function typeORMPlugin(config?: TypeORMPluginConfig) {
       }
     },
   });
+}
+
+function getOrCreateConnection({ connection }: TypeORMPluginOptions) {
+  if (connection instanceof Connection) {
+    return Promise.resolve(connection);
+  }
+  if (getConnectionManager().has(connection ?? "default")) {
+    return Promise.resolve(getConnection(connection));
+  }
+
+  return createConnection(connection ?? "default");
 }
 
 export default typeORMPlugin;

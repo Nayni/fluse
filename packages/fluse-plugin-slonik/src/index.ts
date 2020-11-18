@@ -1,27 +1,26 @@
 import { createPlugin } from "fluse";
 import { CommonQueryMethodsType, DatabasePoolType } from "slonik";
 
-type SlonikContext = CommonQueryMethodsType;
+export type SlonikContext = CommonQueryMethodsType;
 
-type SlonikPluginConfig = {
+export type SlonikPluginOptions = {
   pool: DatabasePoolType;
   transaction?: boolean;
 };
 
-function slonikPlugin(config: SlonikPluginConfig) {
-  const { pool, transaction = true } = config;
-
-  if (!pool) {
-    throw new Error(
-      "An error occured trying to initialize 'fluse-plugin-slonik': Pool should be initialized."
-    );
-  }
-
-  return createPlugin<SlonikContext>({
+function slonikPlugin(defaultOptions?: SlonikPluginOptions) {
+  return createPlugin<SlonikContext, SlonikPluginOptions>({
     name: "slonik",
     version: "0.x",
-    execute(next) {
-      if (transaction) {
+    execute(next, runtimeOptions) {
+      const options: SlonikPluginOptions = {
+        ...defaultOptions,
+        ...runtimeOptions,
+      };
+
+      const pool = getPool(options);
+
+      if (options.transaction) {
         return pool.transaction((trx) => {
           return next(trx);
         });
@@ -30,6 +29,16 @@ function slonikPlugin(config: SlonikPluginConfig) {
       }
     },
   });
+}
+
+function getPool(options: SlonikPluginOptions) {
+  if (!options.pool) {
+    throw new Error(
+      "An error occured in 'fluse-plugin-slonik': Pool should be initialized."
+    );
+  }
+
+  return options.pool;
 }
 
 export default slonikPlugin;
