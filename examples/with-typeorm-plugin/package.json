@@ -1,7 +1,7 @@
 {
   "name": "fluse-example-with-typeorm-plugin",
   "description": "An example of fluse with the typeorm plugin",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "private": "true",
   "main": "dist/index.js",
   "license": "MIT",
@@ -16,9 +16,9 @@
   },
   "dependencies": {
     "faker": "^5.1.0",
-    "fluse": "^0.5.0",
-    "fluse-plugin-faker": "^0.1.7",
-    "fluse-plugin-typeorm": "^0.3.0",
+    "fluse": "^0.6.0",
+    "fluse-plugin-faker": "^0.2.0",
+    "fluse-plugin-typeorm": "^0.4.0",
     "jest": "26.6.1",
     "jest-circus": "26.6.1",
     "jest-environment-node": "26.6.1",
