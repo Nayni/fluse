@@ -42,6 +42,7 @@
     "semver": "7.3.2"
   },
   "devDependencies": {
+    "@types/faker": "5.1.6",
     "@types/jest": "26.0.10",
     "@types/lodash": "4.14.160",
     "@types/semver": "7.3.3",
@@ -49,6 +50,7 @@
     "@typescript-eslint/parser": "3.10.1",
     "eslint": "7.7.0",
     "eslint-config-fluse": "^1.0.2",
+    "faker": "5.2.0",
     "fluse-prettier-config": "1.0.1",
     "jest": "26.4.2",
     "jest-circus": "26.4.2",

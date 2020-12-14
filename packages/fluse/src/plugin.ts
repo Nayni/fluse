@@ -50,28 +50,28 @@ export interface PluginDefinition<TContext, TOptions> {
 
 export type PluginConfig = Record<string, Plugin<any, any>>;
 
-export type RootContextMap<TPluginConfig extends PluginConfig> = {
+export type PluginContextMap<TPluginConfig extends PluginConfig> = {
   [K in keyof TPluginConfig]: Parameters<
     Parameters<TPluginConfig[K]["execute"]>[0]
   >[0];
 };
 
-export type RootContext<TPluginConfig extends PluginConfig> = {
+export type FixtureContext<TPluginConfig extends PluginConfig> = {
   [K in ExcludeKeysByValue<
-    RootContextMap<TPluginConfig>,
+    PluginContextMap<TPluginConfig>,
     undefined
-  >]: RootContextMap<TPluginConfig>[K];
+  >]: PluginContextMap<TPluginConfig>[K];
 };
 
-export type RootOptionsMap<TPluginConfig extends PluginConfig> = {
+export type PluginOptionsMap<TPluginConfig extends PluginConfig> = {
   [K in keyof TPluginConfig]: Parameters<TPluginConfig[K]["execute"]>[1];
 };
 
-export type RootOptions<TPluginConfig extends PluginConfig> = {
+export type FixtureOptions<TPluginConfig extends PluginConfig> = {
   [K in ExcludeKeysByValue<
-    RootOptionsMap<TPluginConfig>,
+    PluginOptionsMap<TPluginConfig>,
     undefined
-  >]?: RootOptionsMap<TPluginConfig>[K];
+  >]?: PluginOptionsMap<TPluginConfig>[K];
 };
 
 export function createPlugin<TContext, TOptions = EmptyOptions>(
@@ -92,7 +92,7 @@ export function validatePlugins(plugins: PluginConfig) {
 
 export function composeMiddlewares<TContext>(
   plugins: PluginConfig,
-  pluginOptions: RootOptions<PluginConfig>,
+  pluginOptions: FixtureOptions<PluginConfig>,
   resolver: FixtureResolver<TContext, any>
 ): FixtureResolver<TContext, any> {
   let lastResolver = resolver;

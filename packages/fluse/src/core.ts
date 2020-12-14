@@ -1,78 +1,63 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
-  CombinedFixtureBuilder,
-  Fixture,
-  fixture,
   FixtureDefinition,
-  FixtureFactory,
-  isFixture,
+  FixtureDefinitionConfig,
+  FluseFixture,
 } from "./fixture";
 import { FluseTypes, withFluseSymbol } from "./internal";
 import {
-  composeMiddlewares,
+  FixtureContext,
+  FixtureOptions,
   PluginConfig,
-  RootContext,
-  RootOptions,
   validatePlugins,
 } from "./plugin";
+import { FluseScenarioComposer } from "./scenario";
 
 export type FluseOptions<TPluginConfig extends PluginConfig> = {
   plugins?: TPluginConfig;
 };
 
-export interface Fluse<TPluginConfig extends PluginConfig> {
-  execute: <TResult>(
-    fixture: Fixture<RootContext<TPluginConfig>, TResult>,
-    options?: RootOptions<TPluginConfig>
-  ) => Promise<TResult>;
-
-  fixture: <TResult, TArgs = unknown>(
-    definition: FixtureDefinition<RootContext<TPluginConfig>, TResult, TArgs>
-  ) => FixtureFactory<RootContext<TPluginConfig>, TResult, TArgs>;
-
-  combine: () => CombinedFixtureBuilder<RootContext<TPluginConfig>>;
-}
-
 export function fluse<TPluginConfig extends PluginConfig = never>(
   options?: FluseOptions<TPluginConfig>
-): Fluse<TPluginConfig> {
+) {
   const plugins: TPluginConfig = options?.plugins ?? ({} as TPluginConfig);
-
   validatePlugins(plugins);
 
-  async function execute<TResult>(
-    fixture: Fixture<RootContext<TPluginConfig>, TResult>,
-    options?: RootOptions<TPluginConfig>
-  ) {
-    if (!isFixture(fixture)) {
-      throw new Error(
-        "The provided fixture is not valid." +
-          "\n\nA valid fixture should be created by 'fixture()' or 'combine()'"
-      );
-    }
+  function fixture<TResult, TArgs = never>(
+    config: FixtureDefinitionConfig<
+      FixtureContext<TPluginConfig>,
+      TResult,
+      TArgs
+    >
+  ): FixtureDefinition<TResult, TArgs, FixtureOptions<TPluginConfig>> {
+    return (((args?: TArgs) => {
+      const fixture = new FluseFixture<
+        FixtureContext<TPluginConfig>,
+        TResult,
+        TArgs,
+        FixtureOptions<TPluginConfig>
+      >(plugins, config, args);
 
-    const pluginOptions = options ?? {};
-    const rootContext = {} as RootContext<TPluginConfig>;
-    withFluseSymbol(rootContext, FluseTypes.Context);
-
-    const resolve = composeMiddlewares<RootContext<TPluginConfig>>(
-      plugins,
-      pluginOptions,
-      (ctx) => {
-        return fixture.create(ctx);
-      }
-    );
-
-    return resolve(rootContext);
+      withFluseSymbol(fixture, FluseTypes.Fixture);
+      return fixture;
+    }) as unknown) as FixtureDefinition<
+      TResult,
+      TArgs,
+      FixtureOptions<TPluginConfig>
+    >;
   }
 
-  function combine() {
-    return new CombinedFixtureBuilder<RootContext<TPluginConfig>>();
+  function scenario() {
+    const builder = new FluseScenarioComposer<
+      FixtureContext<TPluginConfig>,
+      FixtureOptions<TPluginConfig>
+    >(plugins);
+
+    withFluseSymbol(builder, FluseTypes.ScenarioComposer);
+    return builder;
   }
 
   return {
-    execute,
     fixture,
-    combine,
+    scenario,
   };
 }
