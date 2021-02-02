@@ -54,7 +54,7 @@ import { Comment } from "./model/Comment";
 import { Post } from "./model/Post";
 import { User } from "./model/User";
 
-export const { fixture, combine, execute } = fluse({
+export const { fixture, scenario } = fluse({
   plugins: {
     faker: fakerPlugin(),
   },
@@ -103,58 +103,37 @@ Supercharge your tests!
 ```typescript
 // Consume a single fixture and let Fluse do the heavy lifting
 it("should create many posts", async () => {
-  const { manyPosts } = await execute(
-    postFixture("manyPosts", {
-      list: 3,
-      args: {
-        author: userFixture.asArg(),
-        comments: commentFixture.asArg({
-          list: 3,
-          args: { author: userFixture.asArg() },
-        }),
-      },
-    })
-  );
+  const posts = await postFixture({
+    author: userFixture(),
+    comments: commentFixture({ author: userFixture() }).list(3),
+  })
+    .list(3)
+    .execute();
 });
 
 // Make complex scenario's
 it("should create a fixture scenario", async () => {
-  const postsFromBobAndAlice = combine()
-    .and(userFixture("bob"))
-    .and(userFixture("alice"))
-    .and(({ bob }) =>
-      postFixture("bobsPosts", {
-        list: 5,
-        args: {
-          author: bob,
-          comments: commentFixture.asArg({
-            list: 3,
-            args: {
-              author: userFixture.asArg(),
-            },
-          }),
-        },
-      })
+  const { bob, alice, bobsPosts, alicesPosts } = await scenario()
+    .with("bob", userFixture())
+    .with("alice", userFixture())
+    .with("bobsPosts", ({ bob }) =>
+      postFixture({
+        author: bob,
+        comments: commentFixture({
+          author: userFixture(),
+        }).list(3),
+      }).list(5)
     )
-    .and(({ alice }) =>
-      postFixture("alicesPosts", {
-        list: 5,
-        args: {
-          author: alice,
-          comments: commentFixture.asArg({
-            list: 3,
-            args: {
-              author: userFixture.asArg(),
-            },
-          }),
-        },
-      })
+    .with("alicesPosts", ({ alice }) =>
+      postFixture({
+        author: alice,
+        comments: commentFixture({
+          author: userFixture(),
+        }).list(3),
+      }).list(5)
     )
-    .toFixture();
-
-  const { bob, bobsPosts, alice, alicesPosts } = await execute(
-    postsFromBobAndAlice
-  );
+    .compose()
+    .execute();
 });
 ```
 

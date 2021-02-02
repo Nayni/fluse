@@ -1,18 +1,18 @@
 ---
-id: making-lists
+id: lists
 title: Lists
 sidebar_label: Lists
 ---
 
-Once you have a fixture definition for a single model, you can easily let Fluse create a list of them by using the `list` option.
+Once you have a fixture definition for a single model, you can easily let Fluse create a list of them by chaining the `list` method.
 
 ```typescript
 it("should make a list", async () => {
-  const { users } = await execute(userFixture("users", { list: 10 }));
+  const users = await userFixture().list(10).execute();
 });
 ```
 
-The above example will execute the `userFixture` 10 times and accumulate the results into an array named `users`.
+The above example will execute the `userFixture` 10 times and accumulate the results into an array.
 
 When working with lists you can also gain information regarding the list execution inside your fixture definition.
 
@@ -36,21 +36,6 @@ The third argument of the `create` function of the definition is an info object 
 :::tip
 List info is also available without the `list` option . The `index` will just be `0` and `size` will be `1`.
 :::
-
-Additionally list options are also available for the `asArg` static method which makes it perfect for nesting.
-
-```typescript
-it("should work when nesting with asArg()", async () => {
-  const { posts } = await execute(
-    postFixture("posts", {
-      list: 3,
-      args: {
-        comments: commentFixture.asArg({ list: 3 }),
-      },
-    })
-  );
-});
-```
 
 :::note
 Fluse does **not** perform any optimzations for lists, it simply calls your fixture in a loop. If you need very high performance for large lists it is advisable to create a specific fixture definition for a large list.

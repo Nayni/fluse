@@ -1,30 +1,21 @@
-import _ from "lodash";
-
 export enum FluseTypes {
   Fixture = "Fixture",
-  FixtureFactory = "FixtureFactory",
-  AsArg = "AsArg",
+  ScenarioComposer = "ScenarioComposer",
   Context = "Context",
 }
 
 export const FluseWrappedSymbol = Symbol.for("fluse");
 
-// eslint-disable-next-line @typescript-eslint/ban-types
-export function withFluseSymbol(obj: Function | Object, fluseType: FluseTypes) {
-  if (_.isFunction(obj)) {
-    obj.prototype[FluseWrappedSymbol] = fluseType;
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (obj as any)[FluseWrappedSymbol] = fluseType;
+export function withFluseSymbol(obj: unknown, fluseType: FluseTypes) {
+  (obj as { [K in typeof FluseWrappedSymbol]: FluseTypes })[
+    FluseWrappedSymbol
+  ] = fluseType;
 }
 
-// eslint-disable-next-line @typescript-eslint/ban-types
-export function isFluseType(obj: Function | Object, fluseType: FluseTypes) {
-  if (_.isFunction(obj)) {
-    return obj.prototype[FluseWrappedSymbol] === fluseType;
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return (obj as any)[FluseWrappedSymbol] === fluseType;
+export function isFluseType(obj: unknown, fluseType: FluseTypes) {
+  return (
+    (obj as { [K in typeof FluseWrappedSymbol]: FluseTypes })[
+      FluseWrappedSymbol
+    ] === fluseType
+  );
 }

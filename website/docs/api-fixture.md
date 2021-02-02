@@ -20,13 +20,13 @@ fixture<TResult, TArgs>(config: {
       }
     }
   ) => MaybePromise<TResult>;
-}) => FixtureFactory<TResult, TArgs>
+}) => (args?: TArgs) => Fixture<TResult>
 ```
 
 - `create` **(required)**: A function that defines how to create a data model. This functions receives the following arguments:
   - `context`: The context as defined by [fluse()](./api-fluse.md),
   - `args`: Additional [arguments](./supplying-arguments.md) as defined by the `TArgs` type,
-  - `info`: Additional info such as [list information](./making-lists.md)
+  - `info`: Additional info such as [list information](./lists.md)
 
 ## Example
 
@@ -45,5 +45,9 @@ export const postFixture = fixture<Post, PostArgs>({
 
     return post;
   },
+});
+
+it("should be executable", async () => {
+  const post = await postFixture({ author: new User() }).execute();
 });
 ```

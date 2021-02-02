@@ -30,28 +30,22 @@ Once you have defined your arguments you'll be required to supply them when exec
 
 ```typescript
 it("should require arguments to create a post", async () => {
-  const { myPost } = await execute(
-    postFixture("myPost", { args: { author: new User({ username: "bob" }) } })
-  );
+  const post = await postFixture({
+    author: new User({ username: "bob" }),
+  }).execute();
 });
 ```
 
-In the above example we are required to supply the `args` key with the typed arguments from the `postFixture`.
+> In the above example we are required to pass the author when consuming the `postFixture`. Fluse will automatically determine if arguments are required or not.
 
 While creating an inline entity is perfectly valid. Fluse also supports nesting fixtures. If we had a fixture definition for creating a user we could re-write the above to:
 
 ```typescript
 it("should be possible to nest", async () => {
-  const { myPost } = await execute(
-    postFixture("myPost", { args: { author: userFixture.asArg() } })
-  );
+  const post = await postFixture({
+    author: userFixture(),
+  }).execute();
 });
 ```
 
-Every fixture definition created with Fluse also has a static method `asArg` which can be used to nest fixtures. This allows you to create deeply nested structures easily without having to manually execute and wait for the result yourself.
-
-In case the nested fixture requires arguments the `asArg` method will accept `args` just like a regular fixture.
-
-:::note
-Note that when using `asArg()` the `name` property is not required. Fluse will internally just consume the fixture annonymously and wait for the result.
-:::
+Fixtures defined by Fluse will be automatically augmented to accept other fixtures as their input arguments. Fluse will unwrap these fixtures for you so you don't have to worry about execution order.

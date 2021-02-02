@@ -15,13 +15,12 @@ fluse(options: {
   }
  }) => {
   fixture,
-  combine,
-  execute
+  scenario
 };
 ```
 
 - `options`: additional options for Fluse
-  - `plugins`: a record of plugins to use, the key will define what is available on the [context](./plugin-introduction.md).
+  - `plugins`: a record of plugins to use, the key will define what is available on the [context](./plugins-introduction.md).
 
 ## Example
 
@@ -30,7 +29,7 @@ import { fluse } from "fluse";
 import fakerPlugin from "fluse-plugin-faker";
 import typeormPlugin from "fluse-plugin-typeorm";
 
-export const { fixture, combine, execute } = fluse({
+export const { fixture, scenario } = fluse({
   plugins: {
     orm: typeormPlugin(),
     faker: fakerPlugin(),

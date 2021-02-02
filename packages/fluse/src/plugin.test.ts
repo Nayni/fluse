@@ -1,13 +1,5 @@
-/* eslint-disable @typescript-eslint/ban-types */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import semver from "semver";
-import { Fixture } from "./fixture";
-import {
-  composeMiddlewares,
-  createPlugin,
-  EmptyContext,
-  validatePlugins,
-} from "./plugin";
+import { createPlugin, EmptyContext, validatePlugins } from "./plugin";
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const packageJson = require("../package.json");
@@ -57,43 +49,5 @@ describe("'validatePlugins()'", () => {
         foo: plugin,
       })
     ).toThrowError(/is not compatible/);
-  });
-});
-
-describe("'composeMiddlewares()'", () => {
-  it("should compose plugins in a FIFO order of execution", async () => {
-    const order: number[] = [];
-
-    const pluginOne = createPlugin<EmptyContext>({
-      name: "one",
-      version: "*",
-      execute(next) {
-        order.push(1);
-        return next();
-      },
-    });
-    const pluginTwo = createPlugin<EmptyContext>({
-      name: "two",
-      version: "*",
-      execute(next) {
-        order.push(2);
-        return next();
-      },
-    });
-    const testFixture: Fixture<{}, { foo: number }> = {
-      create: jest.fn(),
-    };
-    const resolve = composeMiddlewares<{}>(
-      {
-        one: pluginOne,
-        two: pluginTwo,
-      },
-      {},
-      (context) => testFixture.create(context)
-    );
-
-    await resolve({});
-
-    expect(order).toEqual([1, 2]);
   });
 });

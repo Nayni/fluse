@@ -5,7 +5,7 @@ import { Post } from "./model/Post";
 import { User } from "./model/User";
 
 // Initialize fluse and get access to the main API's
-export const { fixture, combine, execute } = fluse();
+export const { fixture, scenario } = fluse();
 
 // Next up we define some basic fixtures.
 // Some of them require input parameters to allow for some flexbility.
