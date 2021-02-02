@@ -46,7 +46,7 @@ This plugin requires `faker` to be installed as well.
 import { fluse } from "fluse";
 import fakerPlugin from "fluse-plugin-faker";
 
-const { fixture, combine, execute } = fluse({
+const { fixture, scenario } = fluse({
   plugins: {
     faker: fakerPlugin(),
   },

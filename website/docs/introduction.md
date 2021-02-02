@@ -24,9 +24,9 @@ Testing an application should be easy. This starts with generating test data for
 
 - A unified way of defining fixtures
 - A declarative scenario builder, composing fixtures together
-- Built-in supprt for [lists](./making-lists.md) and[ deeply nested structures](./supplying-arguments.md)
+- Built-in supprt for [lists](./lists.md) and[ deeply nested structures](./supplying-arguments.md)
 - Type-safety all the way through
-- Extensions in the form of [plugins](./plugin-introduction.md).
+- Extensions in the form of [plugins](./plugins-introduction.md).
 
 This might all still sound a little vague so let me give you an example!
 
@@ -172,7 +172,7 @@ import { Comment } from "./entities/Comment";
 import { User } from "./entities/User";
 import { Post } from "./entities/Post";
 
-export const { fixture, combine, execute } = fluse({
+export const { fixture, scenario } = fluse({
   plugins: {
     faker: fakerPlugin(),
     orm: typeormPlugin(),
@@ -232,7 +232,7 @@ export const postFixture = fixture<Post, PostArgs>({
 });
 ```
 
-After some initial configuration of [plugins](./plugin-introduction.md) the **first step** of Fluse's workflow is to define **fixture definitions**. These definitions will be our primitive building blocks.
+After some initial configuration of [plugins](./plugins-introduction.md) the **first step** of Fluse's workflow is to define **fixture definitions**. These definitions will be our primitive building blocks.
 
 :::note
 Fluse is able to integrate with your favorite libraries by using plugins. In this example we configured a Faker plugin and a TypeORM plugin.
@@ -242,46 +242,31 @@ Now let's go back to our test:
 
 ```typescript
 // getPostsByCommentCount.test.ts
-import {
-  execute,
-  userFixture,
-  postFixture,
-  commentFixture,
-} from "./entities/fixtures";
+import { userFixture, postFixture, commentFixture } from "./entities/fixtures";
 
-const scenario = combine()
-  .and(userFixture("bob"))
-  .and(userFixture("alice"))
-  .and(({ bob }) =>
-    postFixture("bobsPost", {
-      args: {
-        author: bob,
-        comments: commentFixture.asArg({
-          list: 10,
-          args: {
-            author: userFixture.asArg(),
-          },
-        }),
-      },
+const testScenario = scenario()
+  .with("bob", userFixture())
+  .with("alice", userFixture())
+  .with("bobsPosts", ({ bob }) =>
+    postFixture({
+      author: bob,
+      comments: commentFixture({
+        author: userFixture(),
+      }).list(10),
     })
   )
-  .and(({ alice }) =>
-    postFixture("alicesPosts", {
-      args: {
-        author: alice,
-        comments: commentFixture.asArg({
-          list: 5,
-          args: {
-            author: userFixture.asArg(),
-          },
-        }),
-      },
+  .with("alicesPosts", ({ alice }) =>
+    postFixture({
+      author: alice,
+      comments: commentFixture({
+        author: userFixture(),
+      }).list(5),
     })
   )
-  .toFixture();
+  .compose();
 
 it("should return the posts ordered by their comment count (desc)", async () => {
-  const { bobsPosts, alicesPosts } = await execute(scenario);
+  const { bobsPosts, alicesPosts } = await testScenario.execute();
 
   const actual = await getPostsByCommentCount();
 
@@ -296,7 +281,7 @@ The scenario is built by composing our fixture definitions together. Notice how:
 
 - The scenario is **declarative** by nature and can be **re-used**,
 - The scenario is **type-safe**,
-- The scenario has references to **named** objects that we chose on the spot,
+- The scenario has references to **named** objects that we chose during composition,
 - We can go from a single entity to a list of entities by simply refering to it as a `list`,
 - We can re-use fixture definitions in a **nested** way (i.e. to create a random user per comment),
 - We can use libraries like Faker and TypeORM by configuring them upfront in the form of **plugins**
@@ -304,6 +289,6 @@ The scenario is built by composing our fixture definitions together. Notice how:
 Find out more about what you can do with Fluse such as:
 
 - [Supplying arguments](./supplying-arguments.md)
-- [Lists](./making-lists.md)
-- [Combining fixtures](./combining-fixtures.md)
-- [Plugins](./plugin-introduction.md)
+- [Lists](./lists.md)
+- [Scenarios](./scenarios.md)
+- [Plugins](./plugins-introduction.md)

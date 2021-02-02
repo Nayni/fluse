@@ -45,7 +45,7 @@ yarn add -D fluse
 import { fluse } from "fluse";
 import fakerPlugin from "fluse-plugin-faker";
 
-export const { fixture, combine, execute } = fluse({
+export const { fixture, scenario } = fluse({
   plugins: {
     faker: fakerPlugin(),
   },
@@ -101,71 +101,45 @@ export const postFixture = fixture<Post, PostArgs>({
 
 ```typescript
 it("should create a single post", async () => {
-  const { singlePost } = await execute(
-    postFixture("singlePost", {
-      args: {
-        author: userFixture.asArg(),
-      },
-    })
-  );
+  const post = await postFixture({
+    author: userFixture.asArg(),
+  }).execute();
 
   expect(singlePost).toBeDefined();
 });
 
 it("should create many posts", async () => {
-  const { manyPosts } = await execute(
-    postFixture("manyPosts", {
-      list: 3,
-      args: {
-        author: userFixture.asArg(),
-        comments: commentFixture.asArg({
-          list: 3,
-          args: { author: userFixture.asArg() },
-        }),
-      },
-    })
-  );
+  const posts = await postFixture({
+    author: userFixture(),
+  })
+    .list(3)
+    .execute();
 
-  expect(manyPosts).toBeDefined();
+  expect(posts).toBeDefined();
 });
 
 it("should create a complex scenario", async () => {
-  const postsFromBobAndAlice = combine()
-    .and(userFixture("bob"))
-    .and(userFixture("alice"))
-    .and(({ bob }) =>
-      postFixture("bobsPosts", {
-        list: 5,
-        args: {
-          author: bob,
-          comments: commentFixture.asArg({
-            list: 3,
-            args: {
-              author: userFixture.asArg(),
-            },
-          }),
-        },
-      })
+  const { bob, alice, bobsPosts, alicesPosts } = await scenario()
+    .with("bob", userFixture())
+    .with("alice", userFixture())
+    .with("bobsPosts", ({ bob }) =>
+      postFixture({
+        author: bob,
+        comments: commentFixture({
+          author: userFixture(),
+        }).list(3),
+      }).list(5)
     )
-    .and(({ alice }) =>
-      postFixture("alicesPosts", {
-        list: 5,
-        args: {
-          author: alice,
-          comments: commentFixture.asArg({
-            list: 3,
-            args: {
-              author: userFixture.asArg(),
-            },
-          }),
-        },
-      })
+    .with("alicesPosts", ({ alice }) =>
+      postFixture({
+        author: alice,
+        comments: commentFixture({
+          author: userFixture(),
+        }).list(3),
+      }).list(5)
     )
-    .toFixture();
-
-  const { bob, bobsPosts, alice, alicesPosts } = await execute(
-    postsFromBobAndAlice
-  );
+    .compose()
+    .execute();
 
   expect(bob).toBeDefined();
   expect(alice).toBeDefined();

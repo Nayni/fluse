@@ -6,7 +6,7 @@ import { Post } from "./model/Post";
 import { User } from "./model/User";
 
 // Initialize fluse and get access to the main API's
-export const { fixture, combine, execute } = fluse({
+export const { fixture, scenario } = fluse({
   plugins: {
     orm: typeormPlugin({
       connection: "default",

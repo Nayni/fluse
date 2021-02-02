@@ -1,5 +1,5 @@
 ---
-id: plugin-introduction
+id: plugins-introduction
 title: Introduction
 sidebar_label: Introduction
 ---
@@ -13,7 +13,7 @@ import { fluse } from "fluse";
 import fakerPlugin from "fluse-plugin-faker";
 import typeormPlugin from "fluse-plugin-typeorm";
 
-export const { fixture, combine, execute } = fluse({
+export const { fixture, scenario } = fluse({
   plugins: {
     orm: typeormPlugin(),
     faker: fakerPlugin(),
@@ -35,7 +35,7 @@ export const userFixture = fixture<User>({
 A plugin can also allow for runtime options. This allows you to alter the behaviour of the plugin at during [execute](./execute.md).
 
 ```typescript
-const { bob } = await execute(userFixture("bob"), {
+const user = await userFixture().execute({
   // We change the orm to use 'myconnection' instead of the default.
   orm: { connection: "myconnection" },
 });

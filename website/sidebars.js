@@ -13,20 +13,20 @@ module.exports = {
         "define-fixture",
         "execute",
         "supplying-arguments",
-        "making-lists",
-        "combining-fixtures",
+        "lists",
+        "scenarios",
       ],
     },
     {
       type: "category",
       label: "API Reference",
-      items: ["api-fluse", "api-fixture", "api-combine", "api-execute"],
+      items: ["api-fluse", "api-fixture", "api-scenario"],
     },
     {
       type: "category",
       label: "Plugins",
       items: [
-        "plugin-introduction",
+        "plugins-introduction",
         "create-plugin",
         {
           type: "category",

@@ -46,7 +46,7 @@ This plugin requires `typeorm` to be installed as well.
 import { fluse } from "fluse";
 import typeormPlugin from "fluse-plugin-typeorm";
 
-const { fixture, combine, execute } = fluse({
+const { fixture, scenario } = fluse({
   plugins: {
     faker: typeormPlugin(),
   },
@@ -65,7 +65,7 @@ const userFixture = fixture<User>({
 
 ## API Reference
 
-The `EntityManager` and `Connection` from `typeorm` will become available on the [context](./plugin-introduction.md) and a runtime option as you use this plugin.
+The `EntityManager` and `Connection` from `typeorm` will become available on the [context](./plugins-introduction.md) and a runtime option as you use this plugin.
 
 ### Signature
 

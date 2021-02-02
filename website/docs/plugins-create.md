@@ -61,7 +61,7 @@ Once we have our plugin, we can use it by setting it up in the initialize:
 ```typescript
 import { fluse } from "fluse";
 
-export const { fixture, combine, execute } = fluse({
+export const { fixture, scenario } = fluse({
   plugins: {
     myplugin: myPlugin(),
   },
@@ -71,7 +71,7 @@ export const { fixture, combine, execute } = fluse({
 Fixture definitions will now contain a key `myplugin` which contains the plugins context. Additionally runtime options are now available on the execute method:
 
 ```typescript
-const { user } = await execute(userFixture("user"), {
+const user = await userFixture().execute({
   myplugin: { printHello: true },
 });
 ```

@@ -49,7 +49,7 @@ import slonikPlugin from "fluse-plugin-slonik";
 
 const pool = createPool("postgres://");
 
-const { fixture, combine, execute } = fluse({
+const { fixture, scenario } = fluse({
   plugins: {
     slonik: slonikPlugin({ pool }),
   },
@@ -68,7 +68,7 @@ const userFixture = fixture<User>({
 
 ## API Reference
 
-The `slonik` api will become available on the [context](./plugin-introduction.md) and a runtime option as you use this plugin.
+The `slonik` api will become available on the [context](./plugins-introduction.md) and a runtime option as you use this plugin.
 
 ### Signature
 
