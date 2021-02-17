@@ -32,29 +32,25 @@
   "scripts": {
     "clean": "rimraf ./dist",
     "lint": "eslint . --ext .ts",
-    "compile": "tsc -p tsconfig.build.json",
+    "compile": "tsc",
     "build": "yarn clean && yarn compile",
-    "example": "ts-node-dev --transpile-only ./example/index.ts",
     "precommit": "lint-staged",
     "prepublishOnly": "yarn build"
   },
   "devDependencies": {
-    "@typescript-eslint/eslint-plugin": "3.10.1",
-    "@typescript-eslint/parser": "3.10.1",
-    "eslint": "7.7.0",
+    "@typescript-eslint/eslint-plugin": "4.15.1",
+    "@typescript-eslint/parser": "4.15.1",
+    "eslint": "7.20.0",
     "eslint-config-fluse": "^1.0.2",
     "fluse-prettier-config": "1.0.1",
-    "lint-staged": "10.2.13",
-    "prettier": "2.1.1",
-    "reflect-metadata": "0.1.13",
+    "lint-staged": "10.5.4",
+    "prettier": "2.2.1",
     "rimraf": "3.0.2",
-    "sqlite3": "5.0.0",
-    "ts-node-dev": "1.0.0-pre.61",
-    "typescript": "4.0.2"
+    "typescript": "4.1.5"
   },
   "peerDependencies": {
-    "fluse": "^0.2.0",
-    "typeorm": "^0.2.25"
+    "fluse": "^0.7.0",
+    "typeorm": "^0.2.31"
   },
   "lint-staged": {
     "{src,example}/**/*.ts": [
