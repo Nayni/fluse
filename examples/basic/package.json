@@ -1,7 +1,7 @@
 {
   "name": "fluse-example-basic",
   "description": "A basic example of fluse",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "private": "true",
   "main": "dist/index.js",
   "license": "MIT",
@@ -16,7 +16,7 @@
   },
   "dependencies": {
     "faker": "^5.4.0",
-    "fluse": "^0.7.2",
+    "fluse": "^0.7.3",
     "jest": "26.6.3",
     "jest-circus": "26.6.3",
     "jest-environment-node": "26.6.2",
