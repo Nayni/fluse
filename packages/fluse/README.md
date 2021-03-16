@@ -47,19 +47,15 @@ npm install --save-dev fluse
 Define fixtures based on your own data models.
 
 ```typescript
-// file: fixtures.ts
 import { fluse } from "fluse";
-import fakerPlugin from "fluse-plugin-faker";
 import { Comment } from "./model/Comment";
 import { Post } from "./model/Post";
 import { User } from "./model/User";
 
-export const { fixture, scenario } = fluse({
-  plugins: {
-    faker: fakerPlugin(),
-  },
-});
+// Initialize fluse once
+export const { fixture, scenario } = fluse();
 
+// Define fixture definitions
 export const userFixture = fixture<User>({
   create({ faker }) {
     return new User({
@@ -140,9 +136,9 @@ it("should create a fixture scenario", async () => {
 Find out more of the core concepts of Fluse like:
 
 - [Supplying arguments](https://nayni.github.io/fluse/docs/supplying-arguments)
-- [Making lists](https://nayni.github.io/fluse/docs/making-lists)
-- [Accessing context and plugins](https://nayni.github.io/fluse/docs/context)
-- [Combining fixtures](https://nayni.github.io/fluse/docs/combining-fixtures)
+- [Lists](https://nayni.github.io/fluse/docs/lists)
+- [Scenarios](https://nayni.github.io/fluse/docs/scenarios)
+- [Plugins](https://nayni.github.io/fluse/docs/plugins-introduction)
 
 ## Documentation
 
