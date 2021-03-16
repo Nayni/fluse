@@ -33,7 +33,7 @@
     "lint": "eslint . --ext .ts",
     "test": "jest",
     "test:ci": "jest --ci --collect-coverage --verbose",
-    "compile": "tsc -b",
+    "compile": "tsc",
     "build": "yarn clean && yarn compile",
     "precommit": "lint-staged",
     "prepublishOnly": "yarn build"

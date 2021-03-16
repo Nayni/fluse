@@ -11,15 +11,18 @@
     "lint": "lerna run lint --stream",
     "test": "lerna run test --stream",
     "test:ci": "lerna run test:ci --stream",
+    "clean": "rimraf ./packages/**/dist/ && rimraf ./packages/**/tsconfig.tsbuildinfo",
     "tsc:packages": "tsc -b packages/",
+    "prepare:packages": "yarn clean && yarn tsc:packages",
     "lerna:bootstrap": "lerna bootstrap",
-    "lerna:publish": "lerna publish --conventional-commits --changelog-preset conventionalcommits --create-release github"
+    "lerna:publish": "yarn prepare:packages && lerna publish --conventional-commits --changelog-preset conventionalcommits --create-release github"
   },
   "devDependencies": {
     "@commitlint/cli": "^11.0.0",
     "@commitlint/config-conventional": "^11.0.0",
     "husky": "^4.2.5",
     "lerna": "^3.22.1",
+    "rimraf": "3.0.2",
     "typescript": "4.2.3"
   },
   "husky": {

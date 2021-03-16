@@ -33,7 +33,7 @@
   "scripts": {
     "clean": "rimraf ./dist",
     "lint": "eslint . --ext .ts",
-    "compile": "tsc -b",
+    "compile": "tsc",
     "build": "yarn clean && yarn compile",
     "precommit": "lint-staged",
     "prepublishOnly": "yarn build"
