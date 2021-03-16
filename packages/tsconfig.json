@@ -1,0 +1,9 @@
+{
+  "files": [],
+  "references": [
+    { "path": "fluse" },
+    { "path": "fluse-plugin-faker" },
+    { "path": "fluse-plugin-slonik" },
+    { "path": "fluse-plugin-typeorm" },
+  ]
+}

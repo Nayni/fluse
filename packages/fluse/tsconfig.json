@@ -1,24 +1,10 @@
 {
+  "extends": "../../tsconfig.settings.json",
   "compilerOptions": {
-    "allowSyntheticDefaultImports": true,
-    "declaration": true,
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
-    "jsx": "react",
-    "lib": ["es6", "dom", "esnext"],
-    "module": "commonjs",
-    "moduleResolution": "node",
-    "noImplicitAny": true,
-    "noImplicitReturns": true,
-    "noImplicitThis": true,
-    "noUnusedLocals": true,
+    "lib": ["es6"],
+    "rootDir": "src",
     "outDir": "dist",
-    "pretty": true,
-    "removeComments": false,
-    "strict": true,
-    "strictNullChecks": true,
-    "target": "es6"
   },
   "exclude": ["node_modules", "dist"],
-  "include": ["**/*"]
+  "include": ["src"]
 }

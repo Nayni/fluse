@@ -45,4 +45,4 @@ jobs:
       - name: install deps
         run: yarn install
       - name: build
-        run: yarn build
+        run: yarn tsc:packages

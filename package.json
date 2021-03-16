@@ -11,15 +11,16 @@
     "lint": "lerna run lint --stream",
     "test": "lerna run test --stream",
     "test:ci": "lerna run test:ci --stream",
-    "build": "lerna run build --scope=fluse --stream && lerna run build --ignore fluse --stream",
+    "tsc:packages": "tsc -b packages/",
     "lerna:bootstrap": "lerna bootstrap",
     "lerna:publish": "lerna publish --conventional-commits --changelog-preset conventionalcommits --create-release github"
   },
   "devDependencies": {
     "@commitlint/cli": "^11.0.0",
     "@commitlint/config-conventional": "^11.0.0",
-    "husky": "^5.0.9",
-    "lerna": "^3.22.1"
+    "husky": "^4.2.5",
+    "lerna": "^3.22.1",
+    "typescript": "4.2.3"
   },
   "husky": {
     "hooks": {
