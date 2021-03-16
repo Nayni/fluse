@@ -43,24 +43,20 @@ yarn add -D fluse
 
 ```typescript
 import { fluse } from "fluse";
-import fakerPlugin from "fluse-plugin-faker";
 
-export const { fixture, scenario } = fluse({
-  plugins: {
-    faker: fakerPlugin(),
-  },
-});
+export const { fixture, scenario } = fluse();
 ```
 
-### 3. Define some data fixtures for your domain
+### 3. Define some fixtures for your models
 
 ```typescript
+import faker from "faker";
 import { Comment } from "./model/Comment";
 import { Post } from "./model/Post";
 import { User } from "./model/User";
 
 export const userFixture = fixture<User>({
-  create({ faker }) {
+  create() {
     return new User({
       userName: faker.internet.userName(),
     });
@@ -72,7 +68,7 @@ interface CommentArgs {
 }
 
 export const commentFixture = fixture<Comment, CommentArgs>({
-  create({ faker }, args) {
+  create(_ctx, args) {
     return new Comment({
       message: faker.lorem.slug(),
       author: args.author,
@@ -86,7 +82,7 @@ interface PostArgs {
 }
 
 export const postFixture = fixture<Post, PostArgs>({
-  create({ faker }, args) {
+  create(_ctx, args) {
     return new Post({
       title: faker.lorem.slug(),
       body: faker.lorem.paragraphs(4),

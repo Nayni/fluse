@@ -4,7 +4,7 @@ title: Scenarios
 sidebar_label: Scenarios
 ---
 
-While [arguments](./supplying-arguments.md) and [lists](./lists.md) will get pretty far already. Fluse is designed to deal with more complex scenarios.
+The usage of [arguments](./supplying-arguments.md) and [lists](./lists.md) will get pretty far already, but Fluse is designed to deal with more complex scenarios.
 
 The `scenario` api lets you do this in a declarative way.
 

@@ -5,30 +5,31 @@ sidebar_label: Introduction
 slug: /
 ---
 
-Fluse is a data-fixture builder. It allows you to build up fixtures in a **declarative**, **composable** and **type-safe** way.
+Fluse is a fixture builder. It allows you to build up fixtures in a **declarative**, **composable** and **type-safe** way.
 
 ## Why Fluse?
 
-Testing an application requires data, more specifically it requires data in certain states.
+In order to test an application you'll likely need data, more specifically you'll need data in specific states.
 
-In almost every project I've worked on, creating test data would result in a combination of the following approaches:
+When applications start off the strategy to create such data usually boils down to:
 
-- Inline entity creation (i.e.: `new User()`),
-- Custom utility functions to make large sets of data
-- External pacakges like `faker` to generate randomness
-- Abusing the built-in ORM solutions like migrations to seed databases while testing
+- inline entity creation when needed, i.e.: `const testUser = new User(/** ...props ... **/)`
+- utility functions for making lists or related entities
+- abusing built-in ORM solutions like migrations to seed databases
 
-Sadly these solutions don't scale well and as time passes this quickly results in chaos.
+What I noticed is that these solutions never scale as the project grows, inline entity creation and utility functions are placed everywhere and ORM solutions like migrations are tedious to maintain and never play well in testing specific scenario's.
 
-Testing an application should be easy. This starts with generating test data for your application models. Fluse brings you a slightly opinionated way of creating test data using fixtures and in return gives you a toolbelt that consists of:
+A good test starts with clear data requirements, so making that data should be easy (and preferably type-safe).
+
+Fluse is the fixture builder I always wanted and hopefully you'll like it too. By adopting a slightly opinionated way of creating your test data you'll get a toolbelt of utility in return, this toolbelt consist of:
 
 - A unified way of defining fixtures
 - A declarative scenario builder, composing fixtures together
-- Built-in supprt for [lists](./lists.md) and[ deeply nested structures](./supplying-arguments.md)
+- Built-in supprt for [lists](./lists.md) and [deeply nested structures](./supplying-arguments.md)
 - Type-safety all the way through
 - Extensions in the form of [plugins](./plugins-introduction.md).
 
-This might all still sound a little vague so let me give you an example!
+All of this might still sound vague, so let me take you through a "real world" example of how migrating to Fluse may look like.
 
 ## Example case: The blog
 
@@ -64,14 +65,17 @@ const comment = new Comment({
   message: "Lorem ipsum....",
   author: user,
 });
+
+// adding this comment to a post looks like:
+post.addComment(comment);
 ```
 
-In order to add comments to a post, our post entity has a method `addComment(comment: Comment)`.
+Let's focus on a specific feature. Our blog application is able to list posts ordered by the most comments.
 
-The feature we are building is to list posts based on the most comments given. A test for this feature would look something like this:
+Writing a typical test for a feature like this might look something like this:
 
 ```typescript
-// getPostsByCommentCount.test.ts
+// getPostsOrderedByCommentCount.test.ts
 it("should return the posts ordered by their comment count (desc)", async () => {
   const bob = new User({
     firstName: "Bob",
@@ -139,34 +143,37 @@ it("should return the posts ordered by their comment count (desc)", async () => 
 
   await db.save([bob, alice, bobsPost, alicesPost]);
 
-  const actual = await getPostsByCommentCount();
+  const actual = await getPostsOrderedByCommentCount();
 
   expect(actual[0].id).toBe(bobsPost.id);
   expect(actual[1].id).toBe(alicesPost.id);
 });
 ```
 
-Do you notice how much **imperative** code is required to set up our test data? All this code **distracts us** from what we are actually testing.
+As you'll notice we wrote a lot of code to set up our test scenario.
 
-However, the attentive reader might consider:
+What bothers me the most about this approach is that almost none of this code is relevant for our test. All we needed were a few posts, some comments and maybe a few users, we really don't care about things like user phone or email... yet it's cluttering our test. On top of that the actual test plus assertion is only 3 lines while setting everything up took up 10 times the space...
 
-- I could introduce `faker` here to generate all this data and make it more random
-- I could refactor this setup code into its own function making the test itself less cluttered
-- I could refactor so the database becomes a dependency of my setup code
+However, the attentive reader might tell us:
 
-This is true and is exactly why I created Fluse. I kept noticing that in every project I would end up doing the same things over and over: I craft utility functions for creating single entities, lists and complex scenario's.
+- you could use `faker` to generate random data so you don't have to worry about username and phone numbers,
+- you could refactor the setup code into a function
+- you could test without database
 
-The reality however ends up being a mixed bag of inline entity creations, scenario's and other utility functions.
+And while all of the above is true the real problems remains: we don't have an opinionated approach for creating test data so we end up with a lot of custom code, code we have to also maintain.
 
-Fluse was designed to **streamline** this process and give you a slightly opinionated workflow for creating data fixtures, by following this workflow Fluse in return gives you some additional benefits such as a **declarative** scenario builder and extra **utilities** for lists and deeply nested structures.
+Fluse was built to give you this slightly opinionated yet extensible workflow. It was designed to take away all your pains with creating (and maintaining) utility functions for single entities, lists and complex scenario's.
 
 Let's re-build the example above with Fluse.
 
 We start with initializing `fluse` and creating some fixture definitions:
 
+:::note 
+This example will include a TypeORM plugin allowing us to re-write our test case with an actual database connection.
+:::
+
 ```typescript
 import { fluse } from "fluse";
-import fakerPlugin from "fluse-plugin-faker";
 import typeormPlugin from "fluse-plugin-typeorm";
 import { Comment } from "./entities/Comment";
 import { User } from "./entities/User";
@@ -174,13 +181,12 @@ import { Post } from "./entities/Post";
 
 export const { fixture, scenario } = fluse({
   plugins: {
-    faker: fakerPlugin(),
     orm: typeormPlugin(),
   },
 });
 
 export const userFixture = fixture<User>({
-  create({ orm, faker }) {
+  create({ orm }) {
     const user = new User({
       firstName: faker.name.firstName(),
       lastName: faker.name.lastName(),
@@ -198,7 +204,7 @@ interface CommentArgs {
 }
 
 export const commentFixture = fixture<Comment, CommentArgs>({
-  create({ orm, faker }, args) {
+  create({ orm }, args) {
     const comment = new Comment({
       message: faker.lorem.slug(),
       author: args.author,
@@ -214,7 +220,7 @@ interface PostArgs {
 }
 
 export const postFixture = fixture<Post, PostArgs>({
-  create({ orm, faker }, args) {
+  create({ orm }, args) {
     const post = new Post({
       title: faker.lorem.slug(),
       body: faker.lorem.paragraphs(4),
@@ -232,11 +238,9 @@ export const postFixture = fixture<Post, PostArgs>({
 });
 ```
 
-After some initial configuration of [plugins](./plugins-introduction.md) the **first step** of Fluse's workflow is to define **fixture definitions**. These definitions will be our primitive building blocks.
+After some initial configuration of [plugins](./plugins-introduction.md) the first step of Fluse's workflow is to define **fixture definitions**. These definitions will be our primitive building blocks.
 
-:::note
-Fluse is able to integrate with your favorite libraries by using plugins. In this example we configured a Faker plugin and a TypeORM plugin.
-:::
+Fluse doesn't magically create entities or make any assumption about your data model. The model is yours, in this example we are using classes backed by TypeORM but Fluse will deal with anything as long as you tell it how to create it. Also notice how we only defined single entities, you'll see how we make lists in a second. 
 
 Now let's go back to our test:
 
@@ -275,7 +279,7 @@ it("should return the posts ordered by their comment count (desc)", async () => 
 });
 ```
 
-The previously large chunk of imperative code has been replaced with a **declarative scenario**.
+The previously large chunk of distracting code inside our test has been replaced with a **declarative scenario**.
 
 The scenario is built by composing our fixture definitions together. Notice how:
 
@@ -284,7 +288,7 @@ The scenario is built by composing our fixture definitions together. Notice how:
 - The scenario has references to **named** objects that we chose during composition,
 - We can go from a single entity to a list of entities by simply refering to it as a `list`,
 - We can re-use fixture definitions in a **nested** way (i.e. to create a random user per comment),
-- We can use libraries like Faker and TypeORM by configuring them upfront in the form of **plugins**
+- The fixtures are integrated and connected with TypeORM, testing with a database just became easy and type-safe!
 
 Find out more about what you can do with Fluse such as:
 
