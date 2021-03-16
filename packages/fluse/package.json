@@ -1,7 +1,7 @@
 {
   "name": "fluse",
   "description": "A composable and type-safe fixture builder.",
-  "version": "0.7.1",
+  "version": "0.7.2",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
   "license": "MIT",
@@ -33,10 +33,9 @@
     "lint": "eslint . --ext .ts",
     "test": "jest",
     "test:ci": "jest --ci --collect-coverage --verbose",
-    "compile": "tsc",
+    "compile": "tsc -b",
     "build": "yarn clean && yarn compile",
-    "precommit": "lint-staged",
-    "prepublishOnly": "yarn build"
+    "precommit": "lint-staged"
   },
   "dependencies": {
     "lodash": "4.17.20",
@@ -67,5 +66,6 @@
       "eslint --max-warnings=0",
       "prettier --write"
     ]
-  }
+  },
+  "gitHead": "8977426f7315b3e1b82d244190a7fe0643d3ed56"
 }

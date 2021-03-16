@@ -1,7 +1,7 @@
 {
   "name": "fluse-plugin-typeorm",
   "description": "Official TypeORM plugin for fluse.",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
   "license": "MIT",
@@ -33,10 +33,9 @@
   "scripts": {
     "clean": "rimraf ./dist",
     "lint": "eslint . --ext .ts",
-    "compile": "tsc",
+    "compile": "tsc -b",
     "build": "yarn clean && yarn compile",
-    "precommit": "lint-staged",
-    "prepublishOnly": "yarn build"
+    "precommit": "lint-staged"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "4.15.1",
@@ -60,5 +59,6 @@
       "eslint --max-warnings=0",
       "prettier --write"
     ]
-  }
+  },
+  "gitHead": "8977426f7315b3e1b82d244190a7fe0643d3ed56"
 }

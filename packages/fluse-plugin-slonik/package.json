@@ -31,8 +31,7 @@
     "lint": "eslint . --ext .ts",
     "compile": "tsc -b",
     "build": "yarn clean && yarn compile",
-    "precommit": "lint-staged",
-    "prepublishOnly": "yarn build"
+    "precommit": "lint-staged"
   },
   "devDependencies": {
     "@types/slonik": "22.1.4",
