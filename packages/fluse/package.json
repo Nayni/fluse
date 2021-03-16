@@ -1,7 +1,7 @@
 {
   "name": "fluse",
   "description": "A composable and type-safe fixture builder.",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
   "license": "MIT",
@@ -50,7 +50,7 @@
     "@typescript-eslint/eslint-plugin": "4.15.1",
     "@typescript-eslint/parser": "4.15.1",
     "eslint": "7.20.0",
-    "eslint-config-fluse": "^1.0.2",
+    "eslint-config-fluse": "^1.0.3",
     "faker": "5.4.0",
     "fluse-prettier-config": "1.0.1",
     "jest": "26.6.3",

@@ -1,7 +1,7 @@
 {
   "name": "fluse-plugin-faker",
   "description": "Official Faker plugin for Fluse.",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
   "license": "MIT",
@@ -39,7 +39,7 @@
     "@typescript-eslint/eslint-plugin": "4.15.1",
     "@typescript-eslint/parser": "4.15.1",
     "eslint": "7.20.0",
-    "eslint-config-fluse": "^1.0.2",
+    "eslint-config-fluse": "^1.0.3",
     "fluse-prettier-config": "1.0.1",
     "lint-staged": "10.5.4",
     "prettier": "2.2.1",

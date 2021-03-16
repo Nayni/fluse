@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+### [0.7.1](https://github.com/Nayni/fluse/compare/fluse@0.7.0...fluse@0.7.1) (2021-03-16)
+
+**Note:** Version bump only for package fluse
+
+
+
+
+
 ## 0.7.0 (2021-02-02)
 
 * feat: rework fixture and execute api (#13) ([0878c72](https://github.com/Nayni/fluse/commit/0878c72)), closes [#13](https://github.com/Nayni/fluse/issues/13)
