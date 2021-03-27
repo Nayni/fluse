@@ -12,7 +12,6 @@ This function is a generic TypeScript function that requires two generic argumen
 - a type for runtime options that your plugin may use. These runtime options can be used to alter behaviour at runtime. They're mainly used for stateful resources such as database connections.
 
 ```typescript
-import faker from "faker";
 import { createPlugin } from "fluse";
 
 // Defines what we will put on the context.

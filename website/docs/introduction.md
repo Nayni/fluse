@@ -154,7 +154,7 @@ As you'll notice we wrote a lot of code to set up our test scenario.
 
 What bothers me the most about this approach is that almost none of this code is relevant for our test. All we needed were a few posts, some comments and maybe a few users, we really don't care about things like user phone or email... yet it's cluttering our test. On top of that the actual test plus assertion is only 3 lines while setting everything up took up 10 times the space...
 
-However, the attentive reader might tell us:
+However, the attentive reader might argue:
 
 - you could use `faker` to generate random data so you don't have to worry about username and phone numbers,
 - you could refactor the setup code into a function
@@ -168,13 +168,14 @@ Let's re-build the example above with Fluse.
 
 We start with initializing `fluse` and creating some fixture definitions:
 
-:::note 
+:::note
 This example will include a TypeORM plugin allowing us to re-write our test case with an actual database connection.
 :::
 
 ```typescript
 import { fluse } from "fluse";
 import typeormPlugin from "fluse-plugin-typeorm";
+import faker from "faker";
 import { Comment } from "./entities/Comment";
 import { User } from "./entities/User";
 import { Post } from "./entities/Post";
@@ -240,18 +241,18 @@ export const postFixture = fixture<Post, PostArgs>({
 
 After some initial configuration of [plugins](./plugins-introduction.md) the first step of Fluse's workflow is to define **fixture definitions**. These definitions will be our primitive building blocks.
 
-Fluse doesn't magically create entities or make any assumption about your data model. The model is yours, in this example we are using classes backed by TypeORM but Fluse will deal with anything as long as you tell it how to create it. Also notice how we only defined single entities, you'll see how we make lists in a second. 
+Fluse doesn't magically create entities or make any assumption about your data model. The model is yours, in this example we are using classes backed by TypeORM but Fluse will deal with anything as long as you tell it how to create it. Also notice how we only defined single entities, you'll see how we make lists in a second.
 
 Now let's go back to our test:
 
 ```typescript
-// getPostsByCommentCount.test.ts
+// getPostsOrderedByCommentCount.test.ts
 import { userFixture, postFixture, commentFixture } from "./entities/fixtures";
 
 const testScenario = scenario()
   .with("bob", userFixture())
   .with("alice", userFixture())
-  .with("bobsPosts", ({ bob }) =>
+  .with("bobsPost", ({ bob }) =>
     postFixture({
       author: bob,
       comments: commentFixture({
@@ -259,7 +260,7 @@ const testScenario = scenario()
       }).list(10),
     })
   )
-  .with("alicesPosts", ({ alice }) =>
+  .with("alicesPost", ({ alice }) =>
     postFixture({
       author: alice,
       comments: commentFixture({
@@ -270,9 +271,9 @@ const testScenario = scenario()
   .compose();
 
 it("should return the posts ordered by their comment count (desc)", async () => {
-  const { bobsPosts, alicesPosts } = await testScenario.execute();
+  const { bobsPost, alicesPost } = await testScenario.execute();
 
-  const actual = await getPostsByCommentCount();
+  const actual = await getPostsOrderedByCommentCount();
 
   expect(actual[0].id).toBe(bobsPost.id);
   expect(actual[1].id).toBe(alicesPost.id);

@@ -26,8 +26,6 @@
 
 <br />
 
-> Fluse is still **under development**.
-
 ## Getting started
 
 Install Fluse using `yarn`:
@@ -42,12 +40,17 @@ or `npm`:
 npm install --save-dev fluse
 ```
 
+## Documentation
+
+Check out [the official documentation](https://nayni.github.io/fluse).
+
 ## The gist
 
 Define fixtures based on your own data models.
 
 ```typescript
 import { fluse } from "fluse";
+import faker from "faker";
 import { Comment } from "./model/Comment";
 import { Post } from "./model/Post";
 import { User } from "./model/User";
@@ -57,7 +60,7 @@ export const { fixture, scenario } = fluse();
 
 // Define fixture definitions
 export const userFixture = fixture<User>({
-  create({ faker }) {
+  create() {
     return new User({
       username: faker.internet.userName(),
     });
@@ -69,7 +72,7 @@ export interface CommentArgs {
 }
 
 export const commentFixture = fixture<Comment, CommentArgs>({
-  create({ faker }, args) {
+  create(_ctx, args) {
     return new Comment({
       message: faker.lorem.slug(),
       author: args.author,
@@ -83,7 +86,7 @@ export interface PostArgs {
 }
 
 export const postFixture = fixture<Post, PostArgs>({
-  create({ faker }, args) {
+  create(_ctx, args) {
     return new Post({
       title: faker.lorem.slug(),
       body: faker.lorem.paragraphs(4),
@@ -97,7 +100,7 @@ export const postFixture = fixture<Post, PostArgs>({
 Supercharge your tests!
 
 ```typescript
-// Consume a single fixture and let Fluse do the heavy lifting
+// Consume a fixture directly and let Fluse do the heavy lifting
 it("should create many posts", async () => {
   const posts = await postFixture({
     author: userFixture(),
@@ -107,7 +110,7 @@ it("should create many posts", async () => {
     .execute();
 });
 
-// Make complex scenario's
+// Compose fixtures together and make scenario's
 it("should create a fixture scenario", async () => {
   const { bob, alice, bobsPosts, alicesPosts } = await scenario()
     .with("bob", userFixture())
@@ -139,16 +142,6 @@ Find out more of the core concepts of Fluse like:
 - [Lists](https://nayni.github.io/fluse/docs/lists)
 - [Scenarios](https://nayni.github.io/fluse/docs/scenarios)
 - [Plugins](https://nayni.github.io/fluse/docs/plugins-introduction)
-
-## Documentation
-
-Visit [the official documentation](https://nayni.github.io/fluse).
-
-## Contributions
-
-Got a question? found a bug? got a suggestion for a new plugin?
-
-Feel free to reach out!
 
 ## License
 
