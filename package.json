@@ -15,7 +15,7 @@
     "tsc:packages": "tsc -b packages/",
     "prepare:packages": "yarn clean && yarn tsc:packages",
     "lerna:bootstrap": "lerna bootstrap",
-    "lerna:publish": "yarn prepare:packages && lerna publish --conventional-commits --changelog-preset conventionalcommits --create-release github"
+    "lerna:publish": "yarn prepare:packages && lerna publish --exact --conventional-commits --changelog-preset conventionalcommits --create-release github"
   },
   "devDependencies": {
     "@commitlint/cli": "^11.0.0",
