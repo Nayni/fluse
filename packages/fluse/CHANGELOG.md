@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 1.0.0 (2021-03-28)
+
+* **Release 1.0.0**
+
+
+
+
+
 ### [0.7.3](https://github.com/Nayni/fluse/compare/fluse@0.7.1...fluse@0.7.3) (2021-03-16)
 
 **Note:** Version bump only for package fluse
