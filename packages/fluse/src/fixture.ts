@@ -17,17 +17,17 @@ export interface FixtureDefinitionConfig<TContext, TResult, TArgs> {
   ): MaybePromise<TResult>;
 }
 
-export type WrapArgs<T, TPluginOptions> = T extends
+export type WrapArgs<T, TPluginOptions, IsRoot = true> = T extends
   | string
   | number
   | boolean
   | Date
   ? T | Fixture<T, TPluginOptions>
   :
-      | Fixture<T, TPluginOptions>
       | T
+      | (IsRoot extends true ? never : Fixture<T, TPluginOptions>)
       | {
-          [K in keyof T]: WrapArgs<T[K], TPluginOptions>;
+          [K in keyof T]: WrapArgs<T[K], TPluginOptions, false>;
         };
 
 export type FixtureDefinition<
