@@ -47,7 +47,7 @@
   },
   "peerDependencies": {
     "faker": "^5.4.0",
-    "fluse": "^0.7.0"
+    "fluse": "^1.0.0"
   },
   "lint-staged": {
     "*.ts": [

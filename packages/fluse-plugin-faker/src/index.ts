@@ -10,7 +10,7 @@ export interface FakerPluginOptions {
 function fakerPlugin(defaultOptions?: FakerPluginOptions) {
   return createPlugin<FakerContext, FakerPluginOptions>({
     name: "faker",
-    version: "0.x",
+    version: "^1.0.0",
     execute(next, runtimeOptions) {
       const options = {
         ...defaultOptions,

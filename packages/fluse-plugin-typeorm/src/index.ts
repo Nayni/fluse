@@ -22,7 +22,7 @@ export interface TypeORMContext {
 function typeORMPlugin(defaultOptions?: TypeORMPluginOptions) {
   return createPlugin<TypeORMContext, TypeORMPluginOptions>({
     name: "typeorm",
-    version: "0.x",
+    version: "^1.0.0",
     async execute(next, runtimeOptions) {
       const options: TypeORMPluginOptions = {
         ...defaultOptions,

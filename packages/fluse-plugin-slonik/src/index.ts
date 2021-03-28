@@ -11,7 +11,7 @@ export type SlonikPluginOptions = {
 function slonikPlugin(defaultOptions?: SlonikPluginOptions) {
   return createPlugin<SlonikContext, SlonikPluginOptions>({
     name: "slonik",
-    version: "0.x",
+    version: "^1.0.0",
     execute(next, runtimeOptions) {
       const options: SlonikPluginOptions = {
         ...defaultOptions,
