@@ -48,7 +48,7 @@ import typeormPlugin from "fluse-plugin-typeorm";
 
 const { fixture, scenario } = fluse({
   plugins: {
-    faker: typeormPlugin(),
+    orm: typeormPlugin(),
   },
 });
 
