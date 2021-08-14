@@ -145,6 +145,11 @@ export class FluseScenarioComposer<
     return fixture;
   }
 
+  async execute(options?: TRuntimeOptions): Promise<TScenario> {
+    const fixture = this.compose();
+    return await fixture.execute(options);
+  }
+
   private validateNameExists(name: string) {
     if (this.factories.some((f) => f.name === name)) {
       throw new Error(

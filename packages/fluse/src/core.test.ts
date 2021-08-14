@@ -95,6 +95,14 @@ describe("scenarios", () => {
     expect(actual.usersPosts[1].author).toEqual(actual.users[1]);
   });
 
+  it("should auto compose when calling 'execute'", async () => {
+    const actual = await scenario()
+      .with("bob", userFixture({ username: "Bob" }))
+      .execute();
+
+    expect(actual.bob.username).toBe("Bob");
+  });
+
   it("should throw when a duplicate name used during composition", async () => {
     // This test is actually more for coverage and to see if non-ts users get a runtime error.
     // We type check this so we have to cheat the type system by casting it away.
