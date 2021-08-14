@@ -44,3 +44,14 @@ it("should create a complex scenario", async () => {
 The above example shows how we create a complex scenario using just 3 fixture definitions: `userFixture`, `postFixture` and `commentFixture`.
 
 The `scenario` composer is type-safe all the way through. You're able to use fixture data previously created in the chain and pass them as input to the next fixture making the possibilities almost endless.
+
+In cases where you are executing scenario's directly you can also skip the `compose` step and directly execute the scenario:
+
+```typescript
+it("should execute scenario's directly", async () => {
+  const { bob, alice } = await scenario()
+    .with("bob", userFixture())
+    .with("alice", () => userFixture())
+    .execute();
+});
+```
