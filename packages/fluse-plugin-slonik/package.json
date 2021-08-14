@@ -34,16 +34,16 @@
     "precommit": "lint-staged"
   },
   "devDependencies": {
-    "@types/slonik": "22.1.4",
-    "@typescript-eslint/eslint-plugin": "4.15.1",
-    "@typescript-eslint/parser": "4.15.1",
-    "eslint": "7.20.0",
+    "@types/slonik": "22.1.5",
+    "@typescript-eslint/eslint-plugin": "4.29.1",
+    "@typescript-eslint/parser": "4.29.1",
+    "eslint": "7.32.0",
     "eslint-config-fluse": "1.1.0",
     "fluse-prettier-config": "1.1.0",
-    "lint-staged": "10.5.4",
-    "prettier": "2.2.1",
+    "lint-staged": "11.1.2",
+    "prettier": "2.3.2",
     "rimraf": "3.0.2",
-    "typescript": "4.2.3"
+    "typescript": "4.3.5"
   },
   "peerDependencies": {
     "fluse": "^1.0.0",

@@ -17,7 +17,7 @@ describe("single fixtures", () => {
   const postFixture = fixture<Post, { author: User }>({
     create(ctx, { author }) {
       return {
-        id: faker.random.uuid(),
+        id: faker.datatype.uuid(),
         title: faker.lorem.words(10),
         author,
       };
@@ -50,7 +50,7 @@ describe("scenarios", () => {
   const userFixture = fixture<User, { username: string }>({
     create(ctx, { username }) {
       return {
-        id: faker.random.uuid(),
+        id: faker.datatype.uuid(),
         username,
       };
     },
@@ -59,7 +59,7 @@ describe("scenarios", () => {
   const postFixture = fixture<Post, { author: User }>({
     create(ctx, { author }) {
       return {
-        id: faker.random.uuid(),
+        id: faker.datatype.uuid(),
         title: faker.lorem.words(10),
         author,
       };
