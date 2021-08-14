@@ -1,7 +1,7 @@
 {
   "name": "fluse-plugin-slonik",
   "description": "Official Slonik plugin for Fluse.",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
   "license": "MIT",
@@ -38,7 +38,7 @@
     "@typescript-eslint/eslint-plugin": "4.29.1",
     "@typescript-eslint/parser": "4.29.1",
     "eslint": "7.32.0",
-    "eslint-config-fluse": "1.1.0",
+    "eslint-config-fluse": "1.1.1",
     "fluse-prettier-config": "1.1.0",
     "lint-staged": "11.1.2",
     "prettier": "2.3.2",

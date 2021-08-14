@@ -3,6 +3,15 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.1.0](https://github.com/Nayni/fluse/compare/fluse@1.0.0...fluse@1.1.0) (2021-08-14)
+
+
+### Features
+
+* allow scenario's to be executed directly ([442f120](https://github.com/Nayni/fluse/commit/442f1209c8aff02437d782a43fcbcacd1b135b24))
+
+
+
 ## 1.0.0 (2021-03-28)
 
 * **Release 1.0.0**
