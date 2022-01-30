@@ -92,7 +92,7 @@ export const postFixture = fixture<Post, PostArgs>({
 
 ```typescript
 it("should create a single post", async () => {
-  const post = await postFixture({
+  const singlePost = await postFixture({
     author: userFixture.asArg(),
   }).execute();
 
